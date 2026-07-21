@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sensor Readings | Irrigation System</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f2;color:#222;}
+    header{background:#2d6a4f;color:white;padding:16px 28px;display:flex;
+           align-items:center;justify-content:space-between;
+           box-shadow:0 2px 8px rgba(0,0,0,0.18);}
+    header h1{font-size:1.4rem;font-weight:700;}
+    header span{font-size:0.85rem;opacity:0.85;}
+    nav{background:#1b4332;padding:0 28px;display:flex;gap:4px;}
+    nav a{color:#b7e4c7;text-decoration:none;padding:12px 18px;font-size:0.92rem;
+          font-weight:500;border-bottom:3px solid transparent;
+          transition:all 0.2s;display:inline-block;}
+    nav a:hover{color:#fff;background:rgba(255,255,255,0.07);}
+    nav a.active{color:#fff;border-bottom:3px solid #52b788;}
+    .page-wrapper{max-width:1200px;margin:32px auto;padding:0 20px;}
+    .controls{display:flex;align-items:center;justify-content:space-between;
+              flex-wrap:wrap;gap:12px;margin-bottom:24px;}
+    .controls h2{font-size:1.25rem;color:#1b4332;font-weight:700;}
+    .btn-group{display:flex;gap:10px;flex-wrap:wrap;}
+    button{padding:9px 20px;border:none;border-radius:6px;cursor:pointer;
+           font-size:0.9rem;font-weight:600;transition:background 0.2s,transform 0.1s;}
+    button:active{transform:scale(0.97);}
+    .btn-simulate{background:#52b788;color:white;}
+    .btn-simulate:hover{background:#40916c;}
+    .btn-refresh{background:#dee2e6;color:#333;}
+    .btn-refresh:hover{background:#ced4da;}
+    .filter-bar{background:white;border-radius:10px;padding:16px 20px;
+                margin-bottom:20px;display:flex;gap:16px;align-items:center;
+                flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+    .filter-bar label{font-size:0.85rem;font-weight:600;color:#555;}
+    .filter-bar select,.filter-bar input[type="text"]{
+      padding:7px 12px;border:1px solid #ced4da;border-radius:6px;
+      font-size:0.88rem;color:#333;background:#f8f9fa;outline:none;
+      transition:border 0.2s;}
+    .filter-bar select:focus,.filter-bar input[type="text"]:focus{
+      border-color:#52b788;}
+    .stats-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));
+                 gap:14px;margin-bottom:24px;}
+    .stat-card{background:white;border-radius:10px;padding:16px 18px;
+               box-shadow:0 1px 4px rgba(0,0,0,0.08);
+               border-left:4px solid #52b788;display:flex;
+               flex-direction:column;gap:4px;}
+    .stat-card.warn{border-left-color:#e9c46a;}
+    .stat-card.danger{border-left-color:#e63946;}
+    .stat-card.info{border-left-color:#4cc9f0;}
+    .stat-label{font-size:0.75rem;color:#888;text-transform:uppercase;
+                letter-spacing:0.5px;font-weight:600;}
+    .stat-value{font-size:1.55rem;font-weight:700;color:#1b4332;}
+    .stat-sub{font-size:0.75rem;color:#aaa;}
+    .table-card{background:white;border-radius:12px;
+                box-shadow:0 2px 8px rgba(0,0,0,0.09);overflow:hidden;}
+    .table-header{padding:16px 20px;border-bottom:1px solid #e9ecef;
+                  display:flex;justify-content:space-between;align-items:center;}
+    .table-header h3{font-size:1rem;color:#1b4332;font-weight:700;}
+    .record-count{font-size:0.82rem;color:#888;background:#f0f4f2;
+                  padding:3px 10px;border-radius:20px;}
+    .table-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;font-size:0.9rem;}
+    thead tr{background:#f8faf9;}
+    thead th{padding:12px 16px;text-align:left;font-size:0.76rem;
+             text-transform:uppercase;letter-spacing:0.5px;color:#666;
+             font-weight:700;border-bottom:2px solid #e9ecef;
+             white-space:nowrap;cursor:pointer;user-select:none;}
+    thead th:hover{background:#eef2ef;color:#2d6a4f;}
+    thead th.asc::after{content:' ▲';font-size:0.68rem;}
+    thead th.desc::after{content:' ▼';font-size:0.68rem;}
+    tbody tr{border-bottom:1px solid #f1f3f2;transition:background 0.15s;}
+    tbody tr:hover{background:#f6fbf8;}
+    tbody tr:last-child{border-bottom:none;}
+    td{padding:11px 16px;vertical-align:middle;}
+    .sensor-name{font-weight:600;color:#2d6a4f;}
+    .zone-tag{display:inline-block;background:#d8f3dc;color:#1b4332;
+              padding:2px 10px;border-radius:20px;font-size:0.76rem;
+              font-weight:600;}
+    .moisture-wrap{display:flex;align-items:center;gap:8px;min-width:130px;}
+    .bar-bg{flex:1;height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;}
+    .bar-fill{height:100%;border-radius:4px;transition:width 0.4s;}
+    .m-val{font-size:0.84rem;font-weight:700;min-width:40px;text-align:right;}
+    .temp-badge{display:inline-block;padding:3px 10px;border-radius:20px;
+                font-size:0.82rem;font-weight:700;}
+    .temp-cold{background:#caf0f8;color:#0077b6;}
+    .temp-warm{background:#fff3cd;color:#856404;}
+    .temp-hot{background:#ffe0e0;color:#c1121f;}
+    .ts{font-size:0.8rem;color:#999;white-space:nowrap;}
+    .id-cell{font-size:0.76rem;color:#bbb;font-family:monospace;}
+    .state-box{text-align:center;padding:60px 20px;color:#888;}
+    .state-box .ico{font-size:3rem;margin-bottom:12px;}
+    .state-box p{font-size:1rem;margin-bottom:6px;}
+    .state-box small{font-size:0.82rem;color:#bbb;}
+    .spinner{width:36px;height:36px;border:4px solid #e9ecef;
+             border-top-color:#52b788;border-radius:50%;
+             animation:spin 0.8s linear infinite;margin:0 auto 16px;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .pagination{display:flex;justify-content:center;align-items:center;
+                gap:8px;padding:16px 20px;border-top:1px solid #e9ecef;
+                flex-wrap:wrap;}
+    .page-btn{padding:6px 13px;border-radius:6px;border:1px solid #dee2e6;
+              background:white;color:#333;font-size:0.84rem;font-weight:600;
+              cursor:pointer;transition:all 0.15s;}
+    .page-btn:hover{background:#f0f4f2;border-color:#52b788;}
+    .page-btn.active{background:#2d6a4f;color:white;border-color:#2d6a4f;}
+    .page-btn:disabled{opacity:0.4;cursor:not-allowed;}
+    .page-info{font-size:0.82rem;color:#888;}
+    #toast{position:fixed;bottom:28px;right:28px;background:#1b4332;
+           color:white;padding:12px 22px;border-radius:8px;font-size:0.9rem;
+           font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.2);
+           opacity:0;transform:translateY(12px);transition:all 0.3s;
+           z-index:9999;pointer-events:none;}
+    #toast.show{opacity:1;transform:translateY(0);}
+    #toast.error{background:#e63946;}
+    @media(max-width:640px){
+      .controls{flex-direction:column;align-items:flex-start;}
+      .filter-bar{flex-direction:column;align-items:flex-start;}
+      nav a{padding:10px 12px;font-size:0.82rem;}
+      .stats-strip{grid-template-columns:repeat(2,1fr);}
+    }
+  </style>
+<body>
+	<!-- HEADER -->
+	<header>
+	  <h1>🌿 Irrigation Management System</h1>
+	  <span id="htime"></span>
+	</header>
+
+	<!-- NAV -->
+	<nav>
+	  <a href="/">Dashboard</a>
+	  <a href="/sensors">Sensors</a>
+	  <a href="/zones">Zones</a>
+	  <a href="/alerts">Alerts</a>
+	  <a href="/readings" class="active">Readings</a>
+	</nav>
+
+	<div class="page-wrapper">
+
+	  <!-- TOP CONTROLS -->
+	  <div class="controls">
+	    <h2>📊 Sensor Readings</h2>
+	    <div class="btn-group">
+	      <button class="btn-simulate" onclick="simulate()">⚡ Simulate New Reading</button>
+	      <button class="btn-refresh"  onclick="loadReadings()">↻ Refresh</button>
+	    </div>
+	  </div>
+
+	  <!-- FILTER BAR -->
+	  <div class="filter-bar">
+	    abel>🔍 Search:</label>
+	    <input type="text" id="q" placeholder="Sensor name..." oninput="applyFilters()" style="min-width:170px;"/>
+
+	    abel>Moisture:</label>
+	    <select id="mf" onchange="applyFilters()">
+	      <option value="all">All</option>
+	      <option value="dry">Dry (&lt;30%)</option>
+	      <option value="optimal">Optimal (30–70%)</option>
+	      <option value="wet">Wet (&gt;70%)</option>
+	    </select>
+
+	    abel>Temperature:</label>
+	    <select id="tf" onchange="applyFilters()">
+	      <option value="all">All</option>
+	      <option value="cold">Cold (&lt;15°C)</option>
+	      <option value="warm">Warm (15–28°C)</option>
+	      <option value="hot">Hot (&gt;28°C)</option>
+	    </select>
+
+	    abel>Rows:</label>
+	    <select id="ps" onchange="applyFilters()">
+	      <option value="10">10</option>
+	      <option value="20" selected>20</option>
+	      <option value="50">50</option>
+	      <option value="100">100</option>
+	    </select>
+
+	    <button class="btn-refresh"
+	            style="padding:7px 14px;font-size:0.82rem;"
+	            onclick="clearFilters()">✕ Clear</button>
+	  </div>
+
+	  <!-- STATS STRIP -->
+	  <div class="stats-strip">
+	    <div class="stat-card">
+	      <span class="stat-label">Total Readings</span>
+	      <span class="stat-value" id="s-total">—</span>
+	      <span class="stat-sub">all recorded</span>
+	    </div>
+	    <div class="stat-card warn">
+	      <span class="stat-label">Avg Moisture</span>
+	      <span class="stat-value" id="s-moisture">—</span>
+	      <span class="stat-sub">across all sensors</span>
+	    </div>
+	    <div class="stat-card info">
+	      <span class="stat-label">Avg Temperature</span>
+	      <span class="stat-value" id="s-temp">—</span>
+	      <span class="stat-sub">across all sensors</span>
+	    </div>
+	    <div class="stat-card danger">
+	      <span class="stat-label">Dry Readings</span>
+	      <span class="stat-value" id="s-dry">—</span>
+	      <span class="stat-sub">moisture &lt; 30%</span>
+	    </div>
+	    <div class="stat-card">
+	      <span class="stat-label">Showing</span>
+	      <span class="stat-value" id="s-showing">—</span>
+	      <span class="stat-sub">filtered results</span>
+	    </div>
+	  </div>
+
+	  <!-- TABLE CARD -->
+	  <div class="table-card">
+	    <div class="table-header">
+	      <h3>Reading History</h3>
+	      <span class="record-count" id="rec-count">Loading...</span>
+	    </div>
+
+	    <div class="table-wrap">
+	      <table>
+	        <thead>
+	          <tr>
+	            <th onclick="sortBy('id')"       id="th-id">ID</th>
+	            <th onclick="sortBy('sensor')"   id="th-sensor">Sensor</th>
+	            <th onclick="sortBy('zone')"     id="th-zone">Zone</th>
+	            <th onclick="sortBy('moisture')" id="th-moisture">Moisture</th>
+	            <th onclick="sortBy('temp')"     id="th-temp">Temperature</th>
+	            <th onclick="sortBy('time')"     id="th-time">Timestamp</th>
+	          </tr>
+</head>
+	        

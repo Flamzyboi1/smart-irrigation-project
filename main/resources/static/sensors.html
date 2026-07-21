@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Sensors — ECO IGM</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,sans-serif;background:#f4f4f4}
+    .head{padding:14px 4%;background:#176b45;color:white;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+    .head h1{font-size:18px}
+    nav a{color:white;margin-left:12px;text-decoration:none;font-weight:bold;font-size:13px}
+    nav a:hover{text-decoration:underline}
+    .container{padding:20px 4%}
+    .card{background:white;border-radius:8px;padding:16px;margin-bottom:12px;box-shadow:0 2px 6px #0001}
+    .card h3{margin:0 0 8px;color:#176b45;font-size:15px}
+    table{width:100%;border-collapse:collapse;margin-top:6px}
+    td{padding:5px 8px;border-bottom:1px solid #eee;font-size:13px}
+    td:first-child{font-weight:bold;color:#555;width:160px}
+    .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold}
+    .IRRIGATE_NOW{background:#f8d7da;color:#721c24}
+    .IRRIGATE{background:#fff3cd;color:#856404}
+    .ADEQUATE{background:#d4edda;color:#155724}
+    .EXCESS_WATER{background:#cce5ff;color:#004085}
+    #error{color:red;font-weight:bold;padding:10px 0}
+  </style>
+</head>
+<body>
+<div class="head">
+  <h1>🌱 ECO IGM — Sensor Readings</h1>
+  <nav>
+    <a href="/">Dashboard</a>
+    <a href="/sensors.html">Sensors</a>
+    <a href="/zones.html">Zones</a>
+    <a href="/alerts.html">Alerts</a>
+    <a href="/readings.html">Readings</a>
+  </nav>
+</div>
+<div class="container">
+  <div id="error"></div>
+  <div id="container"><p>Loading...</p></div>
+</div>
+<script>
+  fetch('/api/sensors')
+    .then(r => r.json())
+    .then(data => {
+      const c = document.getElementById('container');
+      if (!data.length) {
+        c.innerHTML = '<p>No sensors found.</p>';
+        return;
+      }
+      c.innerHTML = data.map(s => `
+        <div class="card">
+          <h3>${s.label || s.sensorId}
+            <span class="badge ${s.recommendation || ''}">${s.recommendation || 'NO DATA'}</span>
+          </h3>
+          <table>
+            <tr><td>Sensor ID</td><td>${s.sensorId}</td></tr>
+            <tr><td>Type</td><td>${s.type}</td></tr>
+            <tr><td>Zone</td><td>${s.zoneName || '-'}</td></tr>
+            <tr><td>Crop</td><td>${s.cropType || '-'}</td></tr>
+            <tr><td>Zone Status</td><td>${s.zoneStatus || '-'}</td></tr>
+            <tr><td>Moisture</td><td>${s.moisture != null ? s.moisture.toFixed(1) + ' %' : '-'}</td></tr>
+            <tr><td>Temperature</td><td>${s.temperature != null ? s.temperature.toFixed(1) + ' °C' : '-'}</td></tr>
+            <tr><td>Rainfall</td><td>${s.rainfall != null ? s.rainfall.toFixed(1) + ' mm' : '-'}</td></tr>
+            <tr><td>Flow Rate</td><td>${s.flowRate != null ? s.flowRate.toFixed(2) + ' L/min' : '-'}</td></tr>
+            <tr><td>Valve</td><td>${s.valveOpen ? '<b style="color:green">OPEN</b>' : '<b style="color:red">CLOSED</b>'}</td></tr>
+            <tr><td>Threshold</td><td>${s.threshold != null ? s.threshold + ' %' : '-'}</td></tr>
+            <tr><td>Last Reading</td><td>${s.timestamp || '-'}</td></tr>
+          </table>
+        </div>
+      `).join('');
+    })
+    .catch(e => {
+      document.getElementById('error').textContent = 'API error: ' + e;
+      document.getElementById('container').innerHTML = '';
+    });
+</script>
+</body>
+</html>

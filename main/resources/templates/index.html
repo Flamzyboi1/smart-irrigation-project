@@ -1,0 +1,173 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>ECO IGM Smart Irrigation</title>
+  //unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,sans-serif;background:#f3f7f3;color:#20352a}
+    .head{padding:14px 4%;background:#176b45;color:white;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+    .head h1{font-size:18px;font-weight:bold}
+    .head p{font-size:11px;opacity:.8;margin-top:2px}
+    nav a{color:white;margin-left:12px;text-decoration:none;font-weight:bold;font-size:13px}
+    nav a:hover{text-decoration:underline}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 4%}
+    .stat{background:white;border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 6px #0001;border-top:4px solid #176b45}
+    .stat h3{font-size:22px;color:#176b45}
+    .stat p{font-size:12px;color:#666;margin-top:4px}
+    .grid{display:grid;grid-template-columns:2fr 1fr;gap:14px;padding:0 4% 14px}
+    #map{height:480px;border-radius:12px}
+    .panel{background:white;border-radius:12px;padding:14px;box-shadow:0 2px 10px #0001;overflow-y:auto;max-height:480px}
+    .panel h2{font-size:14px;color:#176b45;margin-bottom:10px;border-bottom:1px solid #eee;padding-bottom:6px}
+    .card{padding:10px;border-bottom:1px solid #f0f0f0;font-size:13px}
+    .card:last-child{border-bottom:none}
+    .low{border-left:4px solid #c84332}
+    .ok{border-left:4px solid #258b4c}
+    .wet{border-left:4px solid #1a6fa8}
+    .warn{border-left:4px solid #e0a800}
+    .badge{font-weight:bold;font-size:11px;padding:2px 7px;border-radius:8px;display:inline-block;margin-bottom:4px}
+    .IRRIGATE_NOW{background:#f8d7da;color:#721c24}
+    .IRRIGATE{background:#fff3cd;color:#856404}
+    .ADEQUATE{background:#d4edda;color:#155724}
+    .EXCESS_WATER{background:#cce5ff;color:#004085}
+    .btn{background:#176b45;color:white;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;margin-top:6px}
+    .btn:hover{background:#0f4d30}
+    .footer{padding:10px 4%;font-size:12px;color:#888;border-top:1px solid #ddd;text-align:center}
+    #notice{font-size:12px;color:#176b45;margin-top:6px;min-height:16px}
+    @media(max-width:800px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}#map{height:320px}}
+  </style>
+</head>
+<body>
+<div class="head">
+  <div>
+    <h1>🌱 ECO IGM — Smart Irrigation System</h1>
+    <p>Ventspils University of Applied Sciences — Prototype Dashboard</p>
+  </div>
+  <nav>
+    <a href="/">Dashboard</a>
+    <a href="/sensors.html">Sensors</a>
+    <a href="/zones.html">Zones</a>
+    <a href="/alerts.html">Alerts</a>
+    <a href="/readings.html">Readings</a>
+  </nav>
+</div>
+
+<div class="stats">
+  <div class="stat"><h3 id="totalSensors">-</h3><p>Total Sensors</p></div>
+  <div class="stat"><h3 id="activeSensors">-</h3><p>Active Zones</p></div>
+  <div class="stat"><h3 id="alertCount">-</h3><p>Active Alerts</p></div>
+  <div class="stat"><h3 id="irrigateCount">-</h3><p>Irrigating Now</p></div>
+</div>
+
+<div class="grid">
+  <div id="map"></div>
+  <div class="panel">
+    <h2>Zone Status</h2>
+    <div id="cards"><p style="color:#999;font-size:13px">Loading...</p></div>
+    <button class="btn" onclick="simulate()">Simulate New Reading</button>
+    <p id="notice"></p>
+  </div>
+</div>
+
+<div class="footer">
+  ECO IGM SIA Automatic Irrigation System &nbsp;|&nbsp;
+  API: <a href="/api/dashboard">/api/dashboard</a> &nbsp;|&nbsp;
+  <a href="/h2-console">H2 Console</a> &nbsp;|&nbsp;
+  Author: Favour Uchenna Obidiaso
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([57.393, 21.563], 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  let markers = [];
+
+  async function load() {
+    const data = await fetch('/api/dashboard').then(r => r.json());
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+
+    let alertCount = 0;
+    let irrigateCount = 0;
+
+    document.getElementById('totalSensors').textContent = data.length;
+    document.getElementById('activeSensors').textContent =
+      data.filter(x => x.zoneStatus === 'NORMAL' || x.zoneStatus === 'DRY').length;
+
+    const cards = document.getElementById('cards');
+    cards.innerHTML = data.map(x => {
+      const rec = x.recommendation || 'NO DATA';
+      const low = rec === 'IRRIGATE_NOW' || rec === 'IRRIGATE';
+      const wet = rec === 'EXCESS_WATER';
+      if (rec === 'IRRIGATE_NOW') irrigateCount++;
+      if (rec === 'IRRIGATE_NOW' || rec === 'IRRIGATE') alertCount++;
+      const cls = low ? 'low' : wet ? 'wet' : 'ok';
+
+      if (x.latitude && x.longitude) {
+        const color = low ? '#c84332' : wet ? '#1a6fa8' : '#258b4c';
+        const m = L.circleMarker([x.latitude, x.longitude], {
+          radius: 14, color, fillColor: color, fillOpacity: 0.8
+        }).addTo(map);
+        m.bindPopup(
+          '<b>' + (x.label || x.sensorId) + '</b><br>' +
+          'Zone: ' + (x.zoneName || '-') + '<br>' +
+          'Crop: ' + (x.cropType || '-') + '<br>' +
+          'Moisture: ' + (x.moisture != null ? x.moisture.toFixed(1) + '%' : '-') + '<br>' +
+          'Temp: ' + (x.temperature != null ? x.temperature.toFixed(1) + 'C' : '-') + '<br>' +
+          'Valve: ' + (x.valveOpen ? 'OPEN' : 'CLOSED') + '<br>' +
+          '<b>' + rec + '</b>'
+        );
+        markers.push(m);
+      }
+
+      return '<div class="card ' + cls + '">' +
+        '<span class="badge ' + rec + '">' + rec + '</span>' +
+        '<b>' + (x.label || x.sensorId) + ' — ' + (x.zoneName || '') + '</b>' +
+        '<div>Crop: ' + (x.cropType || '-') + '</div>' +
+        '<div>Moisture: ' + (x.moisture != null ? x.moisture.toFixed(1) + '%' : '-') +
+        ' | Temp: ' + (x.temperature != null ? x.temperature.toFixed(1) + 'C' : '-') + '</div>' +
+        '<div>Rainfall: ' + (x.rainfall != null ? x.rainfall.toFixed(1) + 'mm' : '-') +
+        ' | Flow: ' + (x.flowRate != null ? x.flowRate.toFixed(2) + ' L/min' : '-') + '</div>' +
+        '<div>Valve: <b>' + (x.valveOpen ? 'OPEN' : 'CLOSED') + '</b>' +
+        ' | Zone: ' + (x.zoneStatus || '-') + '</div>' +
+        '</div>';
+    }).join('');
+
+    document.getElementById('alertCount').textContent = alertCount;
+    document.getElementById('irrigateCount').textContent = irrigateCount;
+  }
+
+  async function simulate() {
+    const data = await fetch('/api/dashboard').then(r => r.json());
+    if (!data.length) return;
+    const x = data[Math.floor(Math.random() * data.length)];
+    const moisture = (18 + Math.random() * 65).toFixed(1);
+    const temperature = (15 + Math.random() * 22).toFixed(1);
+    const rainfall = (Math.random() * 8).toFixed(1);
+    const flowRate = (0.3 + Math.random() * 1.5).toFixed(2);
+    await fetch('/api/readings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sensorId: x.sensorId,
+        soilMoisture: moisture,
+        temperature: temperature,
+        rainfall: rainfall,
+        flowRate: flowRate
+      })
+    });
+    document.getElementById('notice').textContent =
+      'New reading saved for ' + x.sensorId + ' — Moisture: ' + moisture + '%';
+    load();
+  }
+
+  load();
+  setInterval(load, 30000);
+</script>
+</body>
+</html>

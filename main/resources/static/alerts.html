@@ -1,0 +1,283 @@
+Here is the complete `alerts.html` — the file above was cut off inside the `loadActive` function. Here is the full file:
+
+***
+
+## `templates/alerts.html` — 100% COMPLETE
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Alerts - ECO IGM Smart Irrigation</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f4f4f4; color: #20352a; }
+    .head { padding: 14px 4%; background: #176b45; color: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .head h1 { font-size: 18px; font-weight: bold; }
+    .head p { font-size: 11px; opacity: .8; margin-top: 2px; }
+    nav a { color: white; margin-left: 12px; text-decoration: none; font-weight: bold; font-size: 13px; }
+    nav a:hover { text-decoration: underline; }
+    .container { padding: 20px 4%; }
+    .summary { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 18px; }
+    .stat { background: white; border-radius: 10px; padding: 14px; text-align: center; box-shadow: 0 1px 6px rgba(0,0,0,.08); border-top: 4px solid #176b45; }
+    .stat h3 { font-size: 24px; color: #176b45; font-weight: bold; }
+    .stat p { font-size: 11px; color: #666; margin-top: 4px; }
+    .stat.crit { border-top-color: #dc3545; }
+    .stat.crit h3 { color: #dc3545; }
+    .stat.warn { border-top-color: #ffc107; }
+    .stat.warn h3 { color: #e0a800; }
+    .stat.unack { border-top-color: #6c757d; }
+    .stat.unack h3 { color: #6c757d; }
+    .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+    .filter-bar span { font-size: 13px; color: #555; font-weight: bold; }
+    .filter-bar button { padding: 7px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; background: #e0e0e0; color: #333; }
+    .filter-bar button.active { background: #176b45; color: white; }
+    .filter-bar button:hover { opacity: .85; }
+    .refresh-note { font-size: 11px; color: #aaa; margin-left: auto; }
+    .card { background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,.07); border-left: 5px solid #ccc; }
+    .card.CRITICAL { border-left-color: #dc3545; }
+    .card.WARNING { border-left-color: #ffc107; }
+    .card.INFO { border-left-color: #17a2b8; }
+    .card.acked { opacity: .55; }
+    .card-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+    .card-header h3 { font-size: 14px; font-weight: bold; }
+    .sev-badge { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+    .sev-CRITICAL { background: #f8d7da; color: #721c24; }
+    .sev-WARNING { background: #fff3cd; color: #856404; }
+    .sev-INFO { background: #d1ecf1; color: #0c5460; }
+    .ack-label { font-size: 11px; color: #888; font-style: italic; }
+    table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+    td { padding: 6px 8px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    td:first-child { font-weight: bold; color: #555; width: 150px; }
+    .btn-ack { margin-top: 10px; padding: 7px 18px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: bold; }
+    .btn-ack:hover { background: #495057; }
+    .empty { text-align: center; padding: 40px; color: #aaa; background: white; border-radius: 8px; font-size: 14px; }
+    #error { color: red; font-weight: bold; padding: 10px 0; font-size: 13px; }
+    .footer { padding: 12px 4%; font-size: 12px; color: #888; border-top: 1px solid #ddd; text-align: center; margin-top: 16px; }
+    .footer a { color: #176b45; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+    @media(max-width:700px) {
+      .summary { grid-template-columns: repeat(2,1fr); }
+      .head { flex-direction: column; align-items: flex-start; }
+      nav a { margin-left: 0; margin-right: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="head">
+  <div>
+    <h1>&#127807; ECO IGM &#8212; Irrigation Alerts</h1>
+    <p>Ventspils University of Applied Sciences &#8212; Smart Irrigation Prototype</p>
+  </div>
+  <nav>
+    <a href="/">Dashboard</a>
+    <a href="/sensors.html">Sensors</a>
+    <a href="/zones.html">Zones</a>
+    <a href="/alerts.html">Alerts</a>
+    <a href="/readings.html">Readings</a>
+  </nav>
+</div>
+
+<div class="container">
+
+  <div class="summary">
+    <div class="stat">
+      <h3 id="totalCount">-</h3>
+      <p>Total Alerts</p>
+    </div>
+    <div class="stat crit">
+      <h3 id="critCount">-</h3>
+      <p>Critical</p>
+    </div>
+    <div class="stat warn">
+      <h3 id="warnCount">-</h3>
+      <p>Warnings</p>
+    </div>
+    <div class="stat unack">
+      <h3 id="unackCount">-</h3>
+      <p>Unacknowledged</p>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <span>Filter:</span>
+    <button class="active" id="btnAll" onclick="loadAll()">All Alerts</button>
+    <button id="btnActive" onclick="loadActive()">Unacknowledged Only</button>
+    <span class="refresh-note" id="lastRefresh"></span>
+  </div>
+
+  <div id="error"></div>
+  <div id="container">
+    <p style="color:#aaa;padding:10px">Loading alerts...</p>
+  </div>
+
+</div>
+
+<div class="footer">
+  ECO IGM SIA Automatic Irrigation System &nbsp;|&nbsp;
+  Author: Favour Uchenna Obidiaso &nbsp;|&nbsp;
+  Supervisor: Dr. Sc. comp., Assoc. prof. Ginta Majore &nbsp;|&nbsp;
+  <a href="/api/alerts">API /alerts</a> &nbsp;|&nbsp;
+  <a href="/api/alerts/active">API /alerts/active</a> &nbsp;|&nbsp;
+  <a href="/h2-console">H2 Console</a>
+</div>
+
+<script>
+  var currentMode = 'all';
+
+  function parseList(data) {
+    if (Array.isArray(data)) return data;
+    if (data && data._embedded) return Object.values(data._embedded)[0];
+    return [];
+  }
+
+  function severityOrder(s) {
+    if (s === 'CRITICAL') return 0;
+    if (s === 'WARNING') return 1;
+    if (s === 'INFO') return 2;
+    return 3;
+  }
+
+  function formatTime(ts) {
+    if (!ts) return '-';
+    return ts.replace('T', ' ').substring(0, 19);
+  }
+
+  function updateSummary() {
+    fetch('/api/alerts')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var list = parseList(data);
+        document.getElementById('totalCount').textContent = list.length;
+        document.getElementById('critCount').textContent =
+          list.filter(function(a) { return a.severity === 'CRITICAL'; }).length;
+        document.getElementById('warnCount').textContent =
+          list.filter(function(a) { return a.severity === 'WARNING'; }).length;
+        document.getElementById('unackCount').textContent =
+          list.filter(function(a) { return !a.acknowledged; }).length;
+      })
+      .catch(function() {});
+  }
+
+  function renderAlerts(data) {
+    var c = document.getElementById('container');
+    var list = parseList(data);
+
+    if (!list.length) {
+      c.innerHTML = '<div class="empty">No alerts found.</div>';
+      return;
+    }
+
+    list.sort(function(a, b) {
+      if (a.acknowledged !== b.acknowledged) {
+        return a.acknowledged ? 1 : -1;
+      }
+      return severityOrder(a.severity) - severityOrder(b.severity);
+    });
+
+    var html = '';
+    for (var i = 0; i < list.length; i++) {
+      var a = list[i];
+      var sev = a.severity || 'INFO';
+      var acked = a.acknowledged;
+
+      html += '<div class="card ' + sev + (acked ? ' acked' : '') + '">';
+      html += '<div class="card-header">';
+      html += '<span class="sev-badge sev-' + sev + '">' + sev + '</span>';
+      html += '<h3>' + (a.alertType || 'ALERT') + '</h3>';
+      if (acked) {
+        html += '<span class="ack-label">&#10003; Acknowledged</span>';
+      }
+      html += '</div>';
+
+      html += '<table>';
+      html += '<tr><td>Zone</td><td>' + (a.zoneName || '-') + '</td></tr>';
+      html += '<tr><td>Sensor</td><td>' + (a.sensorId || '-') + '</td></tr>';
+      html += '<tr><td>Message</td><td>' + (a.message || '-') + '</td></tr>';
+      html += '<tr><td>Alert Type</td><td>' + (a.alertType || '-') + '</td></tr>';
+      html += '<tr><td>Time</td><td>' + formatTime(a.createdAt) + '</td></tr>';
+      html += '<tr><td>Status</td><td>';
+      if (acked) {
+        html += '<span style="color:green;font-weight:bold">&#10003; Acknowledged</span>';
+      } else {
+        html += '<span style="color:#dc3545;font-weight:bold">&#9679; Pending</span>';
+      }
+      html += '</td></tr>';
+      html += '</table>';
+
+      if (!acked) {
+        html += '<button class="btn-ack" onclick="acknowledge(' + a.id + ')">&#10003; Acknowledge</button>';
+      }
+
+      html += '</div>';
+    }
+
+    c.innerHTML = html;
+    document.getElementById('lastRefresh').textContent =
+      'Last updated: ' + new Date().toLocaleTimeString();
+  }
+
+  function loadAll() {
+    currentMode = 'all';
+    document.getElementById('btnAll').classList.add('active');
+    document.getElementById('btnActive').classList.remove('active');
+    document.getElementById('error').textContent = '';
+    fetch('/api/alerts')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        renderAlerts(data);
+        updateSummary();
+      })
+      .catch(function(e) {
+        document.getElementById('error').textContent = 'API error: ' + e;
+        document.getElementById('container').innerHTML = '';
+      });
+  }
+
+  function loadActive() {
+    currentMode = 'active';
+    document.getElementById('btnActive').classList.add('active');
+    document.getElementById('btnAll').classList.remove('active');
+    document.getElementById('error').textContent = '';
+    fetch('/api/alerts/active')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        renderAlerts(data);
+        updateSummary();
+      })
+      .catch(function(e) {
+        document.getElementById('error').textContent = 'API error: ' + e;
+        document.getElementById('container').innerHTML = '';
+      });
+  }
+
+  function acknowledge(id) {
+    fetch('/api/alerts/' + id + '/acknowledge', { method: 'POST' })
+      .then(function() {
+        if (currentMode === 'all') {
+          loadAll();
+        } else {
+          loadActive();
+        }
+      })
+      .catch(function(e) {
+        alert('Error: ' + e);
+      });
+  }
+
+  function refresh() {
+    if (currentMode === 'all') {
+      loadAll();
+    } else {
+      loadActive();
+    }
+  }
+
+  loadAll();
+  setInterval(refresh, 30000);
+</script>
+
+</body>
+</html>
+```
