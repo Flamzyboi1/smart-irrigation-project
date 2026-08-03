@@ -1,86 +1,219 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <title>Zones — ECO IGM</title>
+  <meta charset="UTF-8">
+  <title>Zones</title>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,sans-serif;background:#f4f4f4}
-    .head{padding:14px 4%;background:#176b45;color:white;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
-    .head h1{font-size:18px}
-    nav a{color:white;margin-left:12px;text-decoration:none;font-weight:bold;font-size:13px}
-    nav a:hover{text-decoration:underline}
-    .container{padding:20px 4%}
-    .card{background:white;border-radius:8px;padding:16px;margin-bottom:12px;box-shadow:0 2px 6px #0001}
-    .card h3{margin:0 0 8px;color:#176b45;font-size:15px}
-    table{width:100%;border-collapse:collapse;margin-top:6px}
-    td{padding:5px 8px;border-bottom:1px solid #eee;font-size:13px}
-    td:first-child{font-weight:bold;color:#555;width:180px}
-    .btn{margin-top:10px;padding:7px 16px;background:#176b45;color:white;border:none;border-radius:5px;cursor:pointer;font-size:13px}
-    .btn:hover{background:#0f4d30}
-    .status-NORMAL{color:green;font-weight:bold}
-    .status-DRY{color:orange;font-weight:bold}
-    .status-ALERT{color:red;font-weight:bold}
-    .status-WET{color:#1a6fa8;font-weight:bold}
-    #error{color:red;font-weight:bold;padding:10px 0}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f4f4f4; }
+
+    .head {
+      padding: 14px 4%;
+      background: #176b45;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .head h1 { font-size: 18px; }
+
+    nav a {
+      color: white;
+      margin-left: 12px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    nav a:hover { text-decoration: underline; }
+
+    .container { padding: 20px 4%; }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      color: #176b45;
+      font-size: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+    }
+
+    td {
+      padding: 5px 8px;
+      border-bottom: 1px solid #eee;
+      font-size: 13px;
+    }
+
+    td:first-child {
+      font-weight: bold;
+      color: #555;
+      width: 180px;
+    }
+
+    .btn {
+      margin-top: 10px;
+      padding: 7px 16px;
+      background: #176b45;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .btn:hover { background: #0f4d30; }
+
+    .btn-secondary {
+      background: #2f855a;
+      margin-left: 6px;
+    }
+
+    .btn-secondary:hover { background: #276749; }
+
+    .status-NORMAL { color: green; font-weight: bold; }
+    .status-DRY { color: orange; font-weight: bold; }
+    .status-ALERT { color: red; font-weight: bold; }
+    .status-WET { color: #1a6fa8; font-weight: bold; }
+
+    .crop-box {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .crop-box input {
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      min-width: 220px;
+      font-size: 13px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #666;
+      margin-top: 6px;
+    }
+
+    #error {
+      color: red;
+      font-weight: bold;
+      padding: 10px 0;
+    }
   </style>
 </head>
 <body>
-<div class="head">
-  <h1>🌱 ECO IGM — Irrigation Zones</h1>
-  <nav>
-    <a href="/">Dashboard</a>
-    <a href="/sensors.html">Sensors</a>
-    <a href="/zones.html">Zones</a>
-    <a href="/alerts.html">Alerts</a>
-    <a href="/readings.html">Readings</a>
-  </nav>
-</div>
-<div class="container">
-  <div id="error"></div>
-  <div id="container"><p>Loading...</p></div>
-</div>
-<script>
-  function load() {
-    fetch('/api/zones')
-      .then(r => r.json())
-      .then(data => {
-        const c = document.getElementById('container');
-        const list = Array.isArray(data) ? data
-          : (data._embedded ? Object.values(data._embedded)[0] : []);
-        if (!list.length) {
-          c.innerHTML = '<p>No zones found.</p>';
-          return;
-        }
-        c.innerHTML = list.map(z => `
-          <div class="card">
-            <h3>${z.name} — <span style="color:#555;font-size:13px">${z.cropType || 'Unknown crop'}</span></h3>
-            <table>
-              <tr><td>Status</td><td><span class="status-${z.status}">${z.status || '-'}</span></td></tr>
-              <tr><td>Valve</td><td>${z.valveOpen ? '<b style="color:green">OPEN</b>' : '<b style="color:red">CLOSED</b>'}</td></tr>
-              <tr><td>Moisture Threshold</td><td>${z.moistureThreshold} %</td></tr>
-              <tr><td>Center Lat/Lng</td><td>${z.centerLat}, ${z.centerLng}</td></tr>
-              <tr><td>Radius</td><td>${z.radiusMeters} m</td></tr>
-            </table>
-            <button class="btn" onclick="toggleValve(${z.id})">
-              ${z.valveOpen ? 'Close Valve' : 'Open Valve'}
-            </button>
-          </div>
-        `).join('');
+  <div class="head">
+    <h1>Irrigation Zones</h1>
+    <nav>
+      <a href="index.html">Dashboard</a>
+      <a href="sensors.html">Sensors</a>
+      <a href="zones.html">Zones</a>
+      <a href="alerts.html">Alerts</a>
+      <a href="readings.html">Readings</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <div id="error"></div>
+    <div id="container"><p>Loading...</p></div>
+  </div>
+
+  <script>
+    function load() {
+      fetch('/api/zones')
+        .then(r => r.json())
+        .then(data => {
+          const c = document.getElementById('container');
+          const list = Array.isArray(data)
+            ? data
+            : (data._embedded ? Object.values(data._embedded)[0] : []);
+
+          if (!list.length) {
+            c.innerHTML = '<p>No zones found.</p>';
+            return;
+          }
+
+          c.innerHTML = list.map(z => `
+            <div class="card">
+              <h3>${z.name}</h3>
+              <table>
+                <tr><td>Status</td><td><span class="status-${z.status}">${z.status || '-'}</span></td></tr>
+                <tr><td>Valve</td><td>${z.valveOpen ? '<b style="color:green">OPEN</b>' : '<b style="color:red">CLOSED</b>'}</td></tr>
+                <tr><td>Crop Type</td><td>${z.cropType || '-'}</td></tr>
+                <tr><td>Moisture Threshold</td><td>${z.moistureThreshold}%</td></tr>
+                <tr><td>Center Lat/Lng</td><td>${z.centerLat}, ${z.centerLng}</td></tr>
+                <tr><td>Radius</td><td>${z.radiusMeters} m</td></tr>
+              </table>
+
+              <div class="crop-box">
+                <input id="crop-${z.id}" type="text" placeholder="Enter crop type, e.g. tomato" value="${z.cropType || ''}">
+                <button class="btn btn-secondary" onclick="saveCrop(${z.id})">Save Crop</button>
+                <button class="btn" onclick="toggleValve(${z.id})">
+                  ${z.valveOpen ? 'Close Valve' : 'Open Valve'}
+                </button>
+              </div>
+
+              <div class="hint">
+                Example crop types: tomato, potato, wheat, lettuce
+              </div>
+            </div>
+          `).join('');
+        })
+        .catch(e => {
+          document.getElementById('error').textContent = 'API error: ' + e.message;
+          document.getElementById('container').innerHTML = '';
+        });
+    }
+
+    function toggleValve(id) {
+      fetch('/api/zones/' + id + '/toggle-valve', { method: 'POST' })
+        .then(() => load())
+        .catch(e => alert('Error: ' + e));
+    }
+
+    function saveCrop(id) {
+      const input = document.getElementById('crop-' + id);
+      const cropType = input.value.trim();
+
+      if (!cropType) {
+        alert('Please enter a crop type');
+        return;
+      }
+
+      fetch('/api/zones/' + id + '/crop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cropType: cropType })
       })
-      .catch(e => {
-        document.getElementById('error').textContent = 'API error: ' + e;
-        document.getElementById('container').innerHTML = '';
-      });
-  }
+      .then(r => {
+        if (!r.ok) throw new Error('Failed to save crop type');
+        return r.json();
+      })
+      .then(() => {
+        alert('Crop type saved: ' + cropType);
+        load();
+      })
+      .catch(e => alert('Error: ' + e.message));
+    }
 
-  function toggleValve(id) {
-    fetch('/api/zones/' + id + '/toggle-valve', { method: 'POST' })
-      .then(() => load())
-      .catch(e => alert('Error: ' + e));
-  }
-
-  load();
-</script>
+    load();
+  </script>
 </body>
 </html>

@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Smart Irrigation Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f3f7f3; color: #20352a; }
+    .head {
+      padding: 14px 4%;
+      background: #176b45;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .head h1 { font-size: 20px; font-weight: bold; }
+    .head p { font-size: 12px; opacity: .85; margin-top: 2px; }
+    nav a {
+      color: white;
+      margin-left: 12px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 13px;
+    }
+    nav a:hover { text-decoration: underline; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      padding: 16px 4%;
+    }
+    .stat {
+      background: white;
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+      box-shadow: 0 1px 6px rgba(0,0,0,.08);
+      border-top: 4px solid #176b45;
+    }
+    .stat h3 { font-size: 24px; color: #176b45; }
+    .stat p { font-size: 12px; color: #666; margin-top: 4px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 14px;
+      padding: 0 4% 14px;
+    }
+
+    #map {
+      height: 480px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.08);
+      overflow-y: auto;
+      max-height: 480px;
+    }
+
+    .panel h2 {
+      font-size: 15px;
+      color: #176b45;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 6px;
+    }
+
+    .card {
+      padding: 10px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 13px;
+    }
+    .card:last-child { border-bottom: none; }
+
+    .low { border-left: 4px solid #c84332; }
+    .ok { border-left: 4px solid #258b4c; }
+    .wet { border-left: 4px solid #1a6fa8; }
+    .warn { border-left: 4px solid #e0a800; }
+
+    .badge {
+      font-weight: bold;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 8px;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+    .IRRIGATE_NOW { background: #f8d7da; color: #721c24; }
+    .IRRIGATE { background: #fff3cd; color: #856404; }
+    .ADEQUATE { background: #d4edda; color: #155724; }
+    .EXCESS_WATER { background: #cce5ff; color: #004085; }
+
+    .btn {
+      background: #176b45;
+      color: white;
+      border: none;
+      padding: 7px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .btn:hover { background: #0f4d30; }
+
+    .footer {
+      padding: 10px 4%;
+      font-size: 12px;
+      color: #888;
+      border-top: 1px solid #ddd;
+      text-align: center;
+    }
+
+    #notice {
+      font-size: 12px;
+      color: #176b45;
+      margin-top: 8px;
+      min-height: 16px;
+    }
+
+    @media (max-width: 800px) {
+      .grid { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      #map { height: 320px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="head">
+    <div>
+      <h1>Smart Irrigation Dashboard</h1>
+      <p>Ventspils University of Applied Sciences — Prototype Dashboard</p>
+    </div>
+    <nav>
+      <a href="index.html">Dashboard</a>
+      <a href="sensors.html">Sensors</a>
+      <a href="zones.html">Zones</a>
+      <a href="alerts.html">Alerts</a>
+      <a href="readings.html">Readings</a>
+    </nav>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <h3 id="totalSensors">-</h3>
+      <p>Total Sensors</p>
+    </div>
+    <div class="stat">
+      <h3 id="activeZones">-</h3>
+      <p>Active Zones</p>
+    </div>
+    <div class="stat">
+      <h3 id="alertCount">-</h3>
+      <p>Needs Irrigation</p>
+    </div>
+    <div class="stat">
+      <h3 id="irrigateNowCount">-</h3>
+      <p>Irrigating Now</p>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div id="map"></div>
+
+    <div class="panel">
+      <h2>Latest Sensor Status</h2>
+      <div id="cards"><p style="color:#999;font-size:13px;">Loading...</p></div>
+      <button class="btn" onclick="simulate()">Simulate New Reading</button>
+      <p id="notice"></p>
+    </div>
+  </div>
+
+  <div class="footer">
+    Smart Irrigation System — API:
+    <a href="/api/dashboard" target="_blank">/api/dashboard</a>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([57.3, 24.5], 7);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    let markers = [];
+
+    function safe(v, fallback = '-') {
+      return v === null || v === undefined || v === '' ? fallback : v;
+    }
+
+    function num(v, digits = 1, suffix = '') {
+      return v === null || v === undefined || isNaN(v) ? '-' : Number(v).toFixed(digits) + suffix;
+    }
+
+    function badgeClass(rec) {
+      return (rec || 'ADEQUATE').replace(/\s+/g, '_');
+    }
+
+    async function load() {
+      try {
+        const data = await fetch('/api/dashboard').then(r => r.json());
+
+        markers.forEach(m => map.removeLayer(m));
+        markers = [];
+
+        let alertCount = 0;
+        let irrigateNowCount = 0;
+
+        document.getElementById('totalSensors').textContent = data.length;
+        document.getElementById('activeZones').textContent = data.filter(x =>
+          x.zoneStatus === 'NORMAL' || x.zoneStatus === 'DRY' || x.zoneStatus === 'ALERT' || x.zoneStatus === 'WET'
+        ).length;
+
+        const cards = document.getElementById('cards');
+        cards.innerHTML = data.map(x => {
+          const rec = x.recommendation || 'NO DATA';
+          const isLow = rec === 'IRRIGATE_NOW' || rec === 'IRRIGATE';
+          const isWet = rec === 'EXCESS_WATER';
+
+          if (rec === 'IRRIGATE_NOW' || rec === 'IRRIGATE') alertCount++;
+          if (rec === 'IRRIGATE_NOW') irrigateNowCount++;
+
+          const cls = isLow ? 'low' : isWet ? 'wet' : 'ok';
+
+          if (x.latitude && x.longitude) {
+            const color = isLow ? '#c84332' : isWet ? '#1a6fa8' : '#258b4c';
+            const m = L.circleMarker([x.latitude, x.longitude], {
+              radius: 10,
+              color,
+              fillColor: color,
+              fillOpacity: 0.85
+            }).addTo(map);
+
+            m.bindPopup(`
+              <b>${safe(x.label, x.sensorId)}</b><br>
+              Sensor: ${safe(x.sensorId)}<br>
+              Zone: ${safe(x.zoneName)}<br>
+              Crop: ${safe(x.cropType)}<br>
+              Soil %: ${num(x.soilPercent, 1, '%')}<br>
+              VWC: ${num(x.volumetricWaterContent, 1, '%')}<br>
+              Temp: ${num(x.temperature, 1, '°C')}<br>
+              Humidity: ${num(x.humidity, 1, '%')}<br>
+              Valve: ${x.valveOpen ? 'OPEN' : 'CLOSED'}<br>
+              <b>${rec}</b>
+            `);
+
+            markers.push(m);
+          }
+
+          return `
+            <div class="card ${cls}">
+              <span class="badge ${badgeClass(rec)}">${rec}</span>
+              <div><b>${safe(x.label, x.sensorId)}</b></div>
+              <div>Zone: ${safe(x.zoneName)} | Crop: ${safe(x.cropType)}</div>
+              <div>Soil %: ${num(x.soilPercent, 1, '%')} | VWC: ${num(x.volumetricWaterContent, 1, '%')}</div>
+              <div>Temp: ${num(x.temperature, 1, '°C')} | Humidity: ${num(x.humidity, 1, '%')}</div>
+              <div>Rainfall: ${num(x.rainfall, 1, ' mm')} | Flow: ${num(x.flowRate, 2, ' L/min')}</div>
+              <div>Valve: <b>${x.valveOpen ? 'OPEN' : 'CLOSED'}</b> | Zone: ${safe(x.zoneStatus)}</div>
+            </div>
+          `;
+        }).join('');
+
+        document.getElementById('alertCount').textContent = alertCount;
+        document.getElementById('irrigateNowCount').textContent = irrigateNowCount;
+      } catch (e) {
+        document.getElementById('cards').innerHTML = `<p style="color:red;">Failed to load dashboard: ${e.message}</p>`;
+      }
+    }
+
+    async function simulate() {
+      try {
+        const data = await fetch('/api/dashboard').then(r => r.json());
+        if (!data.length) return;
+
+        const x = data[Math.floor(Math.random() * data.length)];
+
+        const soilPercent = +(18 + Math.random() * 65).toFixed(1);
+        const temperature = +(15 + Math.random() * 22).toFixed(1);
+        const humidity = +(40 + Math.random() * 50).toFixed(1);
+        const rainfall = +(Math.random() * 8).toFixed(1);
+        const flowRate = +(0.3 + Math.random() * 1.5).toFixed(2);
+        const batteryVoltage = +(3.6 + Math.random() * 0.6).toFixed(2);
+
+        await fetch('/api/readings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sensorId: x.sensorId,
+            soilPercent,
+            temperature,
+            humidity,
+            rainfall,
+            flowRate,
+            batteryVoltage
+          })
+        });
+
+        document.getElementById('notice').textContent =
+          `New reading saved for ${x.sensorId} | Soil % ${soilPercent}`;
+
+        load();
+      } catch (e) {
+        document.getElementById('notice').textContent = 'Simulation failed: ' + e.message;
+      }
+    }
+
+    load();
+    setInterval(load, 30000);
+  </script>
+</body>
+</html>

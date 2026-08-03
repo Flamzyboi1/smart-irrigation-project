@@ -4,12 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import lv.venta.irrigation.model.IrrigationAlert;
 import lv.venta.irrigation.model.IrrigationZone;
@@ -18,6 +14,7 @@ import lv.venta.irrigation.service.IrrigationService;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "*")
 public class IrrigationController {
 
     @Autowired
@@ -54,15 +51,30 @@ public class IrrigationController {
     }
 
     @PostMapping("/readings")
-    public SensorReading postReading(@RequestBody Map<String, Object> body) {
-        String sensorId = (String) body.get("sensorId");
-        double moisture = Double.parseDouble(body.get("soilMoisture").toString());
-        double temperature = Double.parseDouble(body.get("temperature").toString());
-        double rainfall = body.containsKey("rainfall")
-            ? Double.parseDouble(body.get("rainfall").toString()) : 0.0;
-        double flowRate = body.containsKey("flowRate")
-            ? Double.parseDouble(body.get("flowRate").toString()) : 0.5;
-        return service.saveReading(sensorId, moisture, temperature, rainfall, flowRate);
+    public ResponseEntity<?> postReading(@RequestBody Map<String, Object> body) {
+        try {
+            String sensorId = String.valueOf(body.get("sensorId"));
+            double soilPercent = n(body, "soilPercent");
+            double temperature = n(body, "temperature");
+            double humidity = n(body, "humidity");
+            double rainfall = n(body, "rainfall");
+            double flowRate = n(body, "flowRate");
+            double batteryVoltage = n(body, "batteryVoltage");
+
+            SensorReading saved = service.saveReading(
+                    sensorId,
+                    soilPercent,
+                    temperature,
+                    humidity,
+                    rainfall,
+                    flowRate,
+                    batteryVoltage
+            );
+
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/zones/{id}/toggle-valve")
@@ -73,5 +85,22 @@ public class IrrigationController {
     @PostMapping("/alerts/{id}/acknowledge")
     public void acknowledgeAlert(@PathVariable Long id) {
         service.acknowledgeAlert(id);
+    }
+
+    @PostMapping("/zones/{id}/crop")
+    public ResponseEntity<?> updateCrop(@PathVariable Long id,
+                                        @RequestBody Map<String, Object> body) {
+        try {
+            String cropType = String.valueOf(body.get("cropType"));
+            IrrigationZone updated = service.updateCropType(id, cropType);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    private double n(Map<String, Object> body, String key) {
+        Object v = body.get(key);
+        return v == null ? 0.0 : Double.parseDouble(v.toString());
     }
 }
