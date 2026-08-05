@@ -1,219 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Zones</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; background: #f4f4f4; }
-
-    .head {
-      padding: 14px 4%;
-      background: #176b45;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .head h1 { font-size: 18px; }
-
-    nav a {
-      color: white;
-      margin-left: 12px;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 13px;
-    }
-
-    nav a:hover { text-decoration: underline; }
-
-    .container { padding: 20px 4%; }
-
-    .card {
-      background: white;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,.08);
-    }
-
-    .card h3 {
-      margin: 0 0 10px;
-      color: #176b45;
-      font-size: 15px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 6px;
-    }
-
-    td {
-      padding: 5px 8px;
-      border-bottom: 1px solid #eee;
-      font-size: 13px;
-    }
-
-    td:first-child {
-      font-weight: bold;
-      color: #555;
-      width: 180px;
-    }
-
-    .btn {
-      margin-top: 10px;
-      padding: 7px 16px;
-      background: #176b45;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-
-    .btn:hover { background: #0f4d30; }
-
-    .btn-secondary {
-      background: #2f855a;
-      margin-left: 6px;
-    }
-
-    .btn-secondary:hover { background: #276749; }
-
-    .status-NORMAL { color: green; font-weight: bold; }
-    .status-DRY { color: orange; font-weight: bold; }
-    .status-ALERT { color: red; font-weight: bold; }
-    .status-WET { color: #1a6fa8; font-weight: bold; }
-
-    .crop-box {
-      margin-top: 12px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .crop-box input {
-      padding: 8px 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      min-width: 220px;
-      font-size: 13px;
-    }
-
-    .hint {
-      font-size: 12px;
-      color: #666;
-      margin-top: 6px;
-    }
-
-    #error {
-      color: red;
-      font-weight: bold;
-      padding: 10px 0;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Zones</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #f4f4f4; }
+.head { padding: 14px 4%; background: #176b45; color: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.head h1 { font-size: 18px; }
+nav a { color: white; margin-left: 12px; text-decoration: none; font-weight: bold; font-size: 13px; }
+nav a:hover { text-decoration: underline; }
+.container { padding: 20px 4%; }
+.card { background: white; border-radius: 8px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+.card h3 { margin: 0 0 12px; color: #176b45; font-size: 16px; }
+table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+td { padding: 5px 8px; border-bottom: 1px solid #eee; font-size: 13px; }
+td:first-child { font-weight: bold; color: #555; width: 180px; }
+.status-NORMAL { color: green; font-weight: bold; }
+.status-DRY { color: orange; font-weight: bold; }
+.status-ALERT { color: red; font-weight: bold; }
+.status-WET { color: #1a6fa8; font-weight: bold; }
+.settings-box { margin-top: 16px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 14px; }
+.settings-box h4 { color: #176b45; margin-bottom: 12px; font-size: 14px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: 12px; font-weight: bold; color: #444; }
+.form-group input, .form-group select { padding: 8px 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; }
+.form-group input:focus, .form-group select:focus { outline: none; border-color: #176b45; }
+.form-hint { font-size: 11px; color: #888; margin-top: 2px; }
+.btn-row { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { padding: 8px 18px; background: #176b45; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; }
+.btn:hover { background: #0f4d30; }
+.btn-valve { background: #2f855a; }
+.btn-valve:hover { background: #276749; }
+.btn-danger { background: #c0392b; }
+.success-msg { color: green; font-size: 12px; margin-top: 6px; font-weight: bold; }
+.error-msg { color: red; font-size: 12px; margin-top: 6px; font-weight: bold; }
+#pageError { color: red; font-weight: bold; padding: 10px 0; }
+.crop-presets { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.preset-btn { padding: 4px 10px; font-size: 11px; border: 1px solid #176b45; background: white; color: #176b45; border-radius: 12px; cursor: pointer; }
+.preset-btn:hover { background: #176b45; color: white; }
+</style>
 </head>
 <body>
-  <div class="head">
-    <h1>Irrigation Zones</h1>
-    <nav>
-      <a href="index.html">Dashboard</a>
-      <a href="sensors.html">Sensors</a>
-      <a href="zones.html">Zones</a>
-      <a href="alerts.html">Alerts</a>
-      <a href="readings.html">Readings</a>
-    </nav>
-  </div>
+<div class="head">
+  <h1>Irrigation Zones</h1>
+  <nav>
+    <a href="index.html">Dashboard</a>
+    <a href="sensors.html">Sensors</a>
+    <a href="zones.html">Zones</a>
+    <a href="alerts.html">Alerts</a>
+    <a href="readings.html">Readings</a>
+  </nav>
+</div>
+<div class="container">
+  <div id="pageError"></div>
+  <div id="container"><p>Loading...</p></div>
+</div>
+<script>
+const CROPS = [
+  { name: 'Tomato', value: 'tomato', moisture: 30, maxTemp: 35 },
+  { name: 'Potato', value: 'potato', moisture: 22, maxTemp: 30 },
+  { name: 'Wheat', value: 'wheat', moisture: 20, maxTemp: 38 },
+  { name: 'Lettuce', value: 'lettuce', moisture: 35, maxTemp: 25 },
+  { name: 'Corn', value: 'corn', moisture: 25, maxTemp: 36 },
+  { name: 'Rice', value: 'rice', moisture: 40, maxTemp: 35 },
+  { name: 'Soybean', value: 'soybean', moisture: 28, maxTemp: 34 }
+];
 
-  <div class="container">
-    <div id="error"></div>
-    <div id="container"><p>Loading...</p></div>
-  </div>
+function load() {
+  fetch('/api/zones')
+    .then(r => r.json())
+    .then(data => {
+      const c = document.getElementById('container');
+      const list = Array.isArray(data) ? data : (data._embedded ? Object.values(data._embedded)[0] : []);
+      if (!list.length) { c.innerHTML = '<p>No zones found.</p>'; return; }
+      c.innerHTML = list.map(z => `
+        <div class="card">
+          <h3>${z.name}</h3>
+          <table>
+            <tr><td>Status</td><td><span class="status-${z.status}">${z.status || '-'}</span></td></tr>
+            <tr><td>Valve</td><td>${z.valveOpen ? '<b style="color:green">OPEN</b>' : '<b style="color:red">CLOSED</b>'}</td></tr>
+            <tr><td>Crop Type</td><td id="cropDisplay-${z.id}">${z.cropType || '-'}</td></tr>
+            <tr><td>Moisture Threshold</td><td id="moistDisplay-${z.id}">${z.moistureThreshold > 0 ? z.moistureThreshold + '%' : 'Auto'}</td></tr>
+            <tr><td>Max Temperature</td><td id="tempDisplay-${z.id}">${z.maxTemperature > 0 ? z.maxTemperature + '&deg;C' : '35&deg;C (default)'}</td></tr>
+            <tr><td>Location</td><td>${z.centerLat}, ${z.centerLng}</td></tr>
+            <tr><td>Radius</td><td>${z.radiusMeters} m</td></tr>
+          </table>
 
-  <script>
-    function load() {
-      fetch('/api/zones')
-        .then(r => r.json())
-        .then(data => {
-          const c = document.getElementById('container');
-          const list = Array.isArray(data)
-            ? data
-            : (data._embedded ? Object.values(data._embedded)[0] : []);
-
-          if (!list.length) {
-            c.innerHTML = '<p>No zones found.</p>';
-            return;
-          }
-
-          c.innerHTML = list.map(z => `
-            <div class="card">
-              <h3>${z.name}</h3>
-              <table>
-                <tr><td>Status</td><td><span class="status-${z.status}">${z.status || '-'}</span></td></tr>
-                <tr><td>Valve</td><td>${z.valveOpen ? '<b style="color:green">OPEN</b>' : '<b style="color:red">CLOSED</b>'}</td></tr>
-                <tr><td>Crop Type</td><td>${z.cropType || '-'}</td></tr>
-                <tr><td>Moisture Threshold</td><td>${z.moistureThreshold}%</td></tr>
-                <tr><td>Center Lat/Lng</td><td>${z.centerLat}, ${z.centerLng}</td></tr>
-                <tr><td>Radius</td><td>${z.radiusMeters} m</td></tr>
-              </table>
-
-              <div class="crop-box">
-                <input id="crop-${z.id}" type="text" placeholder="Enter crop type, e.g. tomato" value="${z.cropType || ''}">
-                <button class="btn btn-secondary" onclick="saveCrop(${z.id})">Save Crop</button>
-                <button class="btn" onclick="toggleValve(${z.id})">
-                  ${z.valveOpen ? 'Close Valve' : 'Open Valve'}
-                </button>
-              </div>
-
-              <div class="hint">
-                Example crop types: tomato, potato, wheat, lettuce
+          <div class="settings-box">
+            <h4>Crop Requirements Settings</h4>
+            <div style="margin-bottom:10px">
+              <label style="font-size:12px;font-weight:bold;color:#444">Quick Preset:</label>
+              <div class="crop-presets">
+                ${CROPS.map(cp => `<button class="preset-btn" onclick="applyPreset(${z.id}, '${cp.value}', ${cp.moisture}, ${cp.maxTemp})">${cp.name}</button>`).join('')}
               </div>
             </div>
-          `).join('');
-        })
-        .catch(e => {
-          document.getElementById('error').textContent = 'API error: ' + e.message;
-          document.getElementById('container').innerHTML = '';
-        });
-    }
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="cropInput-${z.id}">Crop Type</label>
+                <input id="cropInput-${z.id}" type="text" placeholder="e.g. tomato, wheat" value="${z.cropType || ''}">
+                <span class="form-hint">Name of the crop grown in this zone</span>
+              </div>
+              <div class="form-group">
+                <label for="moistInput-${z.id}">Soil Moisture Threshold (%)</label>
+                <input id="moistInput-${z.id}" type="number" min="0" max="100" step="0.5" placeholder="e.g. 25" value="${z.moistureThreshold > 0 ? z.moistureThreshold : ''}">
+                <span class="form-hint">Irrigation triggers below this VWC %</span>
+              </div>
+              <div class="form-group">
+                <label for="tempInput-${z.id}">Max Temperature (&deg;C)</label>
+                <input id="tempInput-${z.id}" type="number" min="0" max="60" step="0.5" placeholder="e.g. 35" value="${z.maxTemperature > 0 ? z.maxTemperature : ''}">
+                <span class="form-hint">Alert fires if temp exceeds this value</span>
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn" onclick="saveSettings(${z.id})">Save Requirements</button>
+              <button class="btn btn-valve" onclick="toggleValve(${z.id})">${z.valveOpen ? 'Close Valve' : 'Open Valve'}</button>
+            </div>
+            <div id="msg-${z.id}"></div>
+          </div>
+        </div>
+      `).join('');
+    })
+    .catch(e => {
+      document.getElementById('pageError').textContent = 'API error: ' + e.message;
+      document.getElementById('container').innerHTML = '';
+    });
+}
 
-    function toggleValve(id) {
-      fetch('/api/zones/' + id + '/toggle-valve', { method: 'POST' })
-        .then(() => load())
-        .catch(e => alert('Error: ' + e));
-    }
+function applyPreset(id, crop, moisture, maxTemp) {
+  document.getElementById('cropInput-' + id).value = crop;
+  document.getElementById('moistInput-' + id).value = moisture;
+  document.getElementById('tempInput-' + id).value = maxTemp;
+}
 
-    function saveCrop(id) {
-      const input = document.getElementById('crop-' + id);
-      const cropType = input.value.trim();
+function saveSettings(id) {
+  const cropType = document.getElementById('cropInput-' + id).value.trim();
+  const moistureThreshold = parseFloat(document.getElementById('moistInput-' + id).value) || 0;
+  const maxTemperature = parseFloat(document.getElementById('tempInput-' + id).value) || 0;
+  const msgEl = document.getElementById('msg-' + id);
+  if (!cropType && !moistureThreshold && !maxTemperature) {
+    msgEl.innerHTML = '<span class="error-msg">Please enter at least one value.</span>';
+    return;
+  }
+  fetch('/api/zones/' + id + '/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cropType, moistureThreshold, maxTemperature })
+  })
+  .then(r => { if (!r.ok) throw new Error('Save failed'); return r.json(); })
+  .then(() => {
+    msgEl.innerHTML = '<span class="success-msg">Saved successfully!</span>';
+    setTimeout(() => { msgEl.innerHTML = ''; load(); }, 1500);
+  })
+  .catch(e => { msgEl.innerHTML = '<span class="error-msg">Error: ' + e.message + '</span>'; });
+}
 
-      if (!cropType) {
-        alert('Please enter a crop type');
-        return;
-      }
+function toggleValve(id) {
+  fetch('/api/zones/' + id + '/toggle-valve', { method: 'POST' })
+    .then(() => load())
+    .catch(e => alert('Error: ' + e));
+}
 
-      fetch('/api/zones/' + id + '/crop', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cropType: cropType })
-      })
-      .then(r => {
-        if (!r.ok) throw new Error('Failed to save crop type');
-        return r.json();
-      })
-      .then(() => {
-        alert('Crop type saved: ' + cropType);
-        load();
-      })
-      .catch(e => alert('Error: ' + e.message));
-    }
-
-    load();
-  </script>
+load();
+</script>
 </body>
 </html>
