@@ -35,7 +35,7 @@ public class DataLoader implements CommandLineRunner
         {
             AppUser superadmin = new AppUser();
             superadmin.setFullName("Super Administrator");
-            superadmin.setUsername("EecoigmAdmin");
+            superadmin.setUsername("EcoigmAdmin");
             superadmin.setPassword("Ecoigm123#");
             superadmin.setEmail("admin@irrigation.lv");
             superadmin.setRole("SUPERADMIN");
