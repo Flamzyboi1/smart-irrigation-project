@@ -1,3 +1,4 @@
+// Navbar v2: Users links updated to user-management.html
 package lv.venta.irrigation.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
