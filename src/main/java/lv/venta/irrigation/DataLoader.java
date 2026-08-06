@@ -11,15 +11,16 @@ import lv.venta.irrigation.repo.ZoneCrudRepository;
 import lv.venta.irrigation.service.IrrigationService;
 
 @Component
-public class DataLoader implements CommandLineRunner {
-
+public class DataLoader implements CommandLineRunner
+{
     private final ZoneCrudRepository zones;
     private final SensorCrudRepository sensors;
     private final IrrigationService service;
     private final AppUserRepository userRepo;
 
     public DataLoader(ZoneCrudRepository zones, SensorCrudRepository sensors,
-                      IrrigationService service, AppUserRepository userRepo) {
+                      IrrigationService service, AppUserRepository userRepo)
+    {
         this.zones = zones;
         this.sensors = sensors;
         this.service = service;
@@ -27,63 +28,55 @@ public class DataLoader implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) {
+    public void run(String... args)
+    {
         // Bootstrap superadmin account if no users exist
-        if (userRepo.count() == 0) {
+        if (userRepo.count() == 0)
+        {
             AppUser superadmin = new AppUser();
             superadmin.setFullName("Super Administrator");
             superadmin.setUsername("superadmin");
             superadmin.setPassword("SuperAdmin2024!");
-            superadmin.setEmail("superadmin@ecoigm.lv");
+            superadmin.setEmail("admin@irrigation.lv");
             superadmin.setRole("SUPERADMIN");
             superadmin.setActive(true);
             userRepo.save(superadmin);
         }
 
-        // Bootstrap sensor data if not already loaded
-        if (sensors.count() > 0) return;
+        // Seed zones and sensors only if DB is empty
+        if (zones.count() == 0)
+        {
+            // Zone 1 - North Field (wheat, near Ventspils)
+            IrrigationZone zone1 = new IrrigationZone(
+                "North Field", "Wheat",
+                57.4085, 21.5680,
+                250.0, 30.0, "NEEDS_IRRIGATION"
+            );
+            zones.save(zone1);
 
-        IrrigationZone a = zones.save(
-                new IrrigationZone(
-                        "Tallinn Greenhouse",
-                        "Tomato",
-                        59.437,
-                        24.754,
-                        50,
-                        30,
-                        "NORMAL"
-                )
-        );
-        IrrigationZone b = zones.save(
-                new IrrigationZone(
-                        "Valmiera Field",
-                        "Wheat",
-                        57.541,
-                        25.427,
-                        100,
-                        25,
-                        "NORMAL"
-                )
-        );
-        sensors.save(new Sensor(
-                "SENSOR-001",
-                "DHT11 + Capacitive Soil",
-                59.437,
-                24.754,
-                "Tallinn Greenhouse ESP32",
-                true,
-                a
-        ));
-        sensors.save(new Sensor(
-                "SENSOR-002",
-                "DHT22 + Capacitive Soil",
-                57.541,
-                25.427,
-                "Valmiera Field ESP32",
-                true,
-                b
-        ));
-        service.saveReading("SENSOR-001", 42.5, 25.3, 60.0, 0.0, 0.0, 3.95);
-        service.saveReading("SENSOR-002", 18.0, 21.0, 72.0, 0.0, 0.0, 3.88);
+            // Zone 2 - South Field (potatoes)
+            IrrigationZone zone2 = new IrrigationZone(
+                "South Field", "Potatoes",
+                57.3950, 21.5720,
+                200.0, 35.0, "IRRIGATING"
+            );
+            zones.save(zone2);
+
+            // Sensor 1 - assigned to Zone 1
+            Sensor s1 = new Sensor(
+                "SENSOR-001", "soil_moisture",
+                57.4085, 21.5680,
+                "North Field - Center", true, zone1
+            );
+            sensors.save(s1);
+
+            // Sensor 2 - assigned to Zone 2
+            Sensor s2 = new Sensor(
+                "SENSOR-002", "soil_moisture",
+                57.3950, 21.5720,
+                "South Field - Center", true, zone2
+            );
+            sensors.save(s2);
+        }
     }
 }
