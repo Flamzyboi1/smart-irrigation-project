@@ -1,5 +1,4 @@
 package lv.venta.irrigation.controller;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -29,5 +28,15 @@ public class WebController {
     @GetMapping("/readings")
     public String readings() {
         return "redirect:/readings.html";
+    }
+
+    @GetMapping("/users")
+    public String users() {
+        return "redirect:/users.html";
+    }
+
+    @GetMapping("/sensors")
+    public String sensors() {
+        return "redirect:/sensors.html";
     }
 }
