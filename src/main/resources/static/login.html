@@ -7,12 +7,11 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', sans-serif; background: #f4f7f4; display: flex; flex-direction: column; min-height: 100vh; }
-    header { background: #176b45; color: white; padding: 16px 28px; display: flex; align-items: center; gap: 12px; }
+    header { background: #176b45; color: white; padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     header h1 { font-size: 1.2rem; }
-    header p { font-size: 0.78rem; opacity: 0.8; }
+    header p { font-size: 0.8rem; opacity: 0.8; margin-top: 2px; }
     .wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 30px 16px; }
-    .card { background: white; border-radius: 14px; padding: 36px 32px; width: 100%; max-width: 420px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.10); }
+    .card { background: white; border-radius: 14px; padding: 36px 32px; width: 100%; max-width: 420px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); }
     .card h2 { color: #176b45; margin-bottom: 6px; font-size: 1.4rem; }
     .card p.sub { color: #666; font-size: 0.88rem; margin-bottom: 24px; }
     label { display: block; font-size: 0.85rem; font-weight: 600; color: #333; margin-bottom: 4px; margin-top: 14px; }
@@ -21,103 +20,107 @@
     input.err { border-color: #e63946; }
     .hint { font-size: 0.78rem; color: #e63946; margin-top: 3px; display: none; }
     .hint.show { display: block; }
-    .btn { width: 100%; padding: 12px; background: #176b45; color: white; border: none;
-           border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 22px; transition: background 0.2s; }
+    .btn { width: 100%; padding: 12px; background: #176b45; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 22px; }
     .btn:hover { background: #0f4d30; }
-    .msg { padding: 10px 14px; border-radius: 8px; margin-top: 14px; font-size: 0.88rem; display: none; }
+    .msg { margin-top: 14px; padding: 10px 14px; border-radius: 8px; font-size: 0.9rem; display: none; }
+    .msg-ok { background: #d8f3dc; color: #1b4332; display: block; }
     .msg-err { background: #fde8e8; color: #c0392b; display: block; }
-    .msg-ok  { background: #d8f3dc; color: #1b4332; display: block; }
-    footer { text-align: center; padding: 14px; font-size: 0.78rem; color: #aaa; }
   </style>
 </head>
 <body>
-  <header>
-    <div>
-      <h1>ECOIGM SIA — Smart Irrigation</h1>
-      <p>Prototype Dashboard — Secure Login</p>
-    </div>
-  </header>
-  <div class="wrap">
-    <div class="card">
-      <h2>Sign In</h2>
-      <p class="sub">Enter your credentials to access the dashboard.</p>
-
-      <div id="msg" class="msg"></div>
-
-      <label for="username">Username</label>
-      <input type="text" id="username" placeholder="Enter username" autocomplete="username"/>
-      <span class="hint" id="hintUser">Username is required.</span>
-
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Enter password" autocomplete="current-password"/>
-      <span class="hint" id="hintPass">Password is required.</span>
-
-      <button class="btn" onclick="doLogin()">Login</button>
-    </div>
+<header>
+  <div>
+    <h1>Smart Irrigation Dashboard</h1>
+    <p>ECOIGM SIA — Prototype Dashboard</p>
   </div>
-  <footer>ECOIGM SIA &copy; 2024 — Smart Irrigation System</footer>
+</header>
+<div class="wrap">
+  <div class="card">
+    <h2>Sign In</h2>
+    <p class="sub">Enter your credentials to access the dashboard.</p>
+    <div id="msg" class="msg"></div>
+    <label for="username">Username</label>
+    <input type="text" id="username" placeholder="Username" autocomplete="username">
+    <div class="hint" id="hintUser">Username is required.</div>
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+    <div class="hint" id="hintPass">Password is required.</div>
+    <button class="btn" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+<script>
+const existingToken = localStorage.getItem('authToken');
 
-  <script>
-    // If already logged in, redirect to dashboard
-    if (localStorage.getItem('authToken')) {
-      window.location.href = '/index.html';
-    }
-
-    function showMsg(text, ok) {
-      const el = document.getElementById('msg');
-      el.textContent = text;
-      el.className = 'msg ' + (ok ? 'msg-ok' : 'msg-err');
-    }
-
-    async function doLogin() {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
-      let valid = true;
-
-      document.getElementById('username').classList.remove('err');
-      document.getElementById('password').classList.remove('err');
-      document.getElementById('hintUser').classList.remove('show');
-      document.getElementById('hintPass').classList.remove('show');
-
-      if (!username) {
-        document.getElementById('username').classList.add('err');
-        document.getElementById('hintUser').classList.add('show');
-        valid = false;
+// Validate existing token against server before auto-redirecting
+if (existingToken) {
+  fetch('/api/users/me', { headers: { 'X-Auth-Token': existingToken } })
+    .then(r => {
+      if (r.ok) {
+        window.location.href = '/index.html';
+      } else {
+        // Token is stale (server restarted) - clear it and show login
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('authUser');
       }
-      if (!password) {
-        document.getElementById('password').classList.add('err');
-        document.getElementById('hintPass').classList.add('show');
-        valid = false;
-      }
-      if (!valid) return;
+    })
+    .catch(() => {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUser');
+    });
+}
 
-      try {
-        const res = await fetch('/api/users/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          localStorage.setItem('authToken', data.token);
-          localStorage.setItem('authUser', JSON.stringify({
-            username: data.username,
-            fullName: data.fullName,
-            role: data.role,
-            email: data.email
-          }));
-          showMsg('Login successful! Redirecting...', true);
-          setTimeout(() => window.location.href = '/index.html', 800);
-        } else {
-          showMsg(data.error || 'Login failed. Check your credentials.', false);
-        }
-      } catch (e) {
-        showMsg('Network error. Please try again.', false);
-      }
+function showMsg(text, ok) {
+  const el = document.getElementById('msg');
+  el.className = 'msg ' + (ok ? 'msg-ok' : 'msg-err');
+  el.textContent = text;
+}
+
+async function doLogin() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  let valid = true;
+  document.getElementById('username').classList.remove('err');
+  document.getElementById('password').classList.remove('err');
+  document.getElementById('hintUser').classList.remove('show');
+  document.getElementById('hintPass').classList.remove('show');
+  if (!username) {
+    document.getElementById('username').classList.add('err');
+    document.getElementById('hintUser').classList.add('show');
+    valid = false;
+  }
+  if (!password) {
+    document.getElementById('password').classList.add('err');
+    document.getElementById('hintPass').classList.add('show');
+    valid = false;
+  }
+  if (!valid) return;
+  try {
+    const res = await fetch('/api/users/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('authUser', JSON.stringify({
+        username: data.username,
+        fullName: data.fullName,
+        role: data.role,
+        email: data.email
+      }));
+      showMsg('Login successful! Redirecting...', true);
+      setTimeout(() => window.location.href = '/index.html', 800);
+    } else {
+      showMsg(data.error || 'Invalid username or password.', false);
     }
+  } catch (e) {
+    showMsg('Server error. Please try again.', false);
+  }
+}
 
-    // Allow Enter key to submit
-    document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-  </script>
+// Allow Enter key to submit
+document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+</script>
 </body>
 </html>
