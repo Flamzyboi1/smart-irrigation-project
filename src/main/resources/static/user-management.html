@@ -5,45 +5,54 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Users — Smart Irrigation Dashboard</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', sans-serif; background: #f4f7f4; color: #222; }
-    nav {
-      background: #2d6a4f; color: white; padding: 14px 28px;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    nav .brand { font-size: 1.2rem; font-weight: 700; }
-    nav .brand span { font-size: 0.8rem; display: block; font-weight: 300; opacity: 0.8; }
-    nav .links a { color: white; text-decoration: none; margin-left: 18px; font-size: 0.95rem; }
-    nav .links a:hover { text-decoration: underline; }
-    .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
-    h2 { color: #2d6a4f; margin-bottom: 20px; }
-    .card { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); margin-bottom: 24px; }
-    .card h3 { margin-bottom: 16px; color: #1b4332; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    input, select { width: 100%; padding: 9px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; }
-    .btn { padding: 10px 22px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: 600; }
-    .btn-green { background: #2d6a4f; color: white; margin-top: 14px; }
-    .btn-green:hover { background: #1b4332; }
-    .btn-red { background: #e63946; color: white; padding: 6px 12px; font-size: 0.8rem; border: none; border-radius: 4px; cursor: pointer; }
-    .btn-toggle { background: #f4a261; color: white; padding: 6px 12px; font-size: 0.8rem; border: none; border-radius: 4px; cursor: pointer; }
-    table { width: 100%; border-collapse: collapse; }
-    th { background: #2d6a4f; color: white; padding: 10px 14px; text-align: left; font-size: 0.9rem; }
-    td { padding: 10px 14px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-    tr:hover { background: #f0faf4; }
-    .badge { padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 600; }
-    .badge-active { background: #d8f3dc; color: #1b4332; }
-    .badge-inactive { background: #fde8e8; color: #c0392b; }
-    .badge-admin { background: #dbeafe; color: #1e40af; }
-    .badge-farmer { background: #fef9c3; color: #92400e; }
-    .msg { padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 0.9rem; }
-    .msg-ok { background: #d8f3dc; color: #1b4332; }
-    .msg-err { background: #fde8e8; color: #c0392b; }
-    .actions { display: flex; gap: 6px; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',sans-serif;background:#f4f7f4;color:#222}
+    nav{background:#2d6a4f;color:white;padding:14px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+    nav .brand{font-size:1.1rem;font-weight:700}
+    nav .brand span{font-size:0.78rem;display:block;font-weight:300;opacity:0.8}
+    nav .links a{color:white;text-decoration:none;margin-left:14px;font-size:0.9rem}
+    nav .links a:hover{text-decoration:underline}
+    nav .user-info{font-size:0.82rem;opacity:0.9;display:flex;align-items:center;gap:10px}
+    .logout-btn{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:white;padding:4px 12px;border-radius:5px;cursor:pointer;font-size:0.82rem}
+    .logout-btn:hover{background:rgba(255,255,255,0.3)}
+    .container{max-width:1100px;margin:30px auto;padding:0 20px}
+    h2{color:#2d6a4f;margin-bottom:20px}
+    .card{background:white;border-radius:10px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.07);margin-bottom:24px}
+    .card h3{margin-bottom:16px;color:#1b4332}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    input,select{width:100%;padding:9px 12px;border:1.5px solid #ccc;border-radius:6px;font-size:0.95rem}
+    input:focus,select:focus{outline:none;border-color:#2d6a4f}
+    input.err{border-color:#e63946}
+    .field-err{font-size:0.75rem;color:#e63946;margin-top:2px;display:none}
+    .field-err.show{display:block}
+    .btn{padding:10px 22px;border:none;border-radius:6px;cursor:pointer;font-size:0.95rem;font-weight:600}
+    .btn-green{background:#2d6a4f;color:white;margin-top:14px}
+    .btn-green:hover{background:#1b4332}
+    .btn-red{background:#e63946;color:white;padding:6px 12px;font-size:0.8rem;border:none;border-radius:4px;cursor:pointer}
+    .btn-toggle{background:#f4a261;color:white;padding:6px 12px;font-size:0.8rem;border:none;border-radius:4px;cursor:pointer}
+    table{width:100%;border-collapse:collapse}
+    th{background:#2d6a4f;color:white;padding:10px 14px;text-align:left;font-size:0.9rem}
+    td{padding:10px 14px;border-bottom:1px solid #eee;font-size:0.9rem}
+    tr:hover{background:#f0faf4}
+    .badge{padding:3px 10px;border-radius:12px;font-size:0.78rem;font-weight:600}
+    .badge-active{background:#d8f3dc;color:#1b4332}
+    .badge-inactive{background:#fde8e8;color:#c0392b}
+    .badge-admin{background:#dbeafe;color:#1e40af}
+    .badge-farmer{background:#fef9c3;color:#92400e}
+    .badge-superadmin{background:#ede9fe;color:#5b21b6}
+    .msg{padding:10px 14px;border-radius:6px;margin-bottom:14px;font-size:0.9rem;display:none}
+    .msg-ok{background:#d8f3dc;color:#1b4332;display:block}
+    .msg-err{background:#fde8e8;color:#c0392b;display:block}
+    .actions{display:flex;gap:6px}
+    .access-denied{text-align:center;padding:60px 20px}
+    .access-denied h2{color:#e63946;font-size:1.6rem;margin-bottom:10px}
+    .access-denied p{color:#666;font-size:1rem}
   </style>
 </head>
 <body>
+
 <nav>
-  <div class="brand">Smart Irrigation Dashboard <span>ECOIGM SIA — Prototype Dashboard</span></div>
+  <div class="brand">Smart Irrigation Dashboard<span>ECOIGM SIA — Prototype Dashboard</span></div>
   <div class="links">
     <a href="/index.html">Dashboard</a>
     <a href="/sensors.html">Sensors</a>
@@ -52,102 +61,188 @@
     <a href="/readings.html">Readings</a>
     <a href="/user-management.html">Users</a>
   </div>
+  <div class="user-info">
+    <span id="navUserInfo"></span>
+    <button class="logout-btn" onclick="doLogout()">Logout</button>
+  </div>
 </nav>
+
 <div class="container">
-  <h2>User Management</h2>
-  <div class="card">
-    <h3>Add New User</h3>
-    <div id="msg"></div>
-    <div class="form-grid">
-      <input type="text" id="fullName" placeholder="Full Name"/>
-      <input type="text" id="username" placeholder="Username"/>
-      <input type="email" id="email" placeholder="Email Address"/>
-      <input type="password" id="password" placeholder="Password"/>
-      <select id="role">
-        <option value="FARMER">Farmer</option>
-        <option value="ADMIN">Admin</option>
-      </select>
+
+  <!-- Access Denied panel (shown to FARMERs) -->
+  <div id="accessDenied" class="access-denied" style="display:none">
+    <h2>&#128274; Access Denied</h2>
+    <p>You do not have permission to view user management.<br>Please contact your administrator.</p>
+  </div>
+
+  <!-- Admin panel (shown to ADMIN / SUPERADMIN) -->
+  <div id="adminPanel" style="display:none">
+    <h2>User Management</h2>
+
+    <div class="card">
+      <h3 id="formTitle">Add New User</h3>
+      <div id="msg" class="msg"></div>
+      <div class="form-grid">
+        <div>
+          <input type="text" id="fullName" placeholder="Full Name"/>
+          <span class="field-err" id="errFullName">Full name is required.</span>
+        </div>
+        <div>
+          <input type="text" id="username" placeholder="Username"/>
+          <span class="field-err" id="errUsername">Username is required.</span>
+        </div>
+        <div>
+          <input type="email" id="email" placeholder="Email Address"/>
+          <span class="field-err" id="errEmail">Enter a valid email (e.g. user@domain.com).</span>
+        </div>
+        <div>
+          <input type="password" id="password" placeholder="Password"/>
+          <span class="field-err" id="errPassword">Password is required.</span>
+        </div>
+        <div id="roleWrap">
+          <select id="role">
+            <option value="FARMER">Farmer</option>
+            <option value="ADMIN" id="adminOption">Admin</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-green" onclick="addUser()">Add User</button>
     </div>
-    <button class="btn btn-green" onclick="addUser()">Add User</button>
+
+    <div class="card">
+      <h3>All Users</h3>
+      <table>
+        <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="userTable"><tr><td colspan="7" style="text-align:center;color:#aaa">Loading...</td></tr></tbody>
+      </table>
+    </div>
   </div>
-  <div class="card">
-    <h3>All Users</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>#</th><th>Full Name</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="userTable"><tr><td colspan="7" style="text-align:center;color:#aaa">Loading...</td></tr></tbody>
-    </table>
-  </div>
+
 </div>
+
 <script>
+  const EMAIL_RE = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+  const token = localStorage.getItem('authToken');
+  const userStr = localStorage.getItem('authUser');
+
+  // Redirect to login if not authenticated
+  if (!token || !userStr) {
+    window.location.href = '/login.html';
+  }
+
+  const user = JSON.parse(userStr || '{}');
+  const role = user.role || '';
+
+  // Show name in navbar
+  document.getElementById('navUserInfo').textContent =
+    (user.fullName || user.username || '') + ' (' + role + ')';
+
+  // Hide Admin option in role dropdown for non-SUPERADMIN
+  if (role !== 'SUPERADMIN') {
+    const adminOpt = document.getElementById('adminOption');
+    if (adminOpt) adminOpt.remove();
+  }
+
+  // Show correct panel based on role
+  if (role === 'ADMIN' || role === 'SUPERADMIN') {
+    document.getElementById('adminPanel').style.display = 'block';
+    loadUsers();
+  } else {
+    document.getElementById('accessDenied').style.display = 'block';
+  }
+
   function showMsg(text, ok) {
     const el = document.getElementById('msg');
     el.className = 'msg ' + (ok ? 'msg-ok' : 'msg-err');
     el.textContent = text;
-    setTimeout(() => el.textContent = '', 3000);
+    setTimeout(() => { el.style.display='none'; el.textContent=''; }, 3500);
   }
+
   async function loadUsers() {
-    const res = await fetch('/api/users');
+    const res = await fetch('/api/users', { headers: { 'X-Auth-Token': token } });
+    if (res.status === 401) { window.location.href = '/login.html'; return; }
+    if (res.status === 403) { document.getElementById('adminPanel').style.display='none'; document.getElementById('accessDenied').style.display='block'; return; }
     const users = await res.json();
     const tbody = document.getElementById('userTable');
-    if (!users.length) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa">No users found</td></tr>';
-      return;
-    }
+    if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa">No users found</td></tr>'; return; }
     tbody.innerHTML = users.map(u => `
       <tr>
         <td>${u.id}</td>
         <td>${u.fullName}</td>
         <td>${u.username}</td>
         <td>${u.email}</td>
-        <td><span class="badge ${u.role === 'ADMIN' ? 'badge-admin' : 'badge-farmer'}">${u.role}</span></td>
-        <td><span class="badge ${u.active ? 'badge-active' : 'badge-inactive'}">${u.active ? 'Active' : 'Inactive'}</span></td>
+        <td><span class="badge ${badgeRole(u.role)}">${u.role}</span></td>
+        <td><span class="badge ${u.active ? 'badge-active':'badge-inactive'}">${u.active?'Active':'Inactive'}</span></td>
         <td class="actions">
-          <button class="btn-toggle" onclick="toggleUser(${u.id})">${u.active ? 'Disable' : 'Enable'}</button>
+          <button class="btn-toggle" onclick="toggleUser(${u.id})">${u.active?'Disable':'Enable'}</button>
           <button class="btn-red" onclick="deleteUser(${u.id})">Delete</button>
         </td>
-      </tr>
-    `).join('');
+      </tr>`).join('');
   }
+
+  function badgeRole(r) {
+    if (r==='ADMIN') return 'badge-admin';
+    if (r==='SUPERADMIN') return 'badge-superadmin';
+    return 'badge-farmer';
+  }
+
+  function clearErrors() {
+    ['fullName','username','email','password'].forEach(f => {
+      document.getElementById(f).classList.remove('err');
+      document.getElementById('err'+f.charAt(0).toUpperCase()+f.slice(1)).classList.remove('show');
+    });
+  }
+
   async function addUser() {
-    const body = {
-      fullName: document.getElementById('fullName').value.trim(),
-      username: document.getElementById('username').value.trim(),
-      email: document.getElementById('email').value.trim(),
-      password: document.getElementById('password').value,
-      role: document.getElementById('role').value
-    };
-    if (!body.fullName || !body.username || !body.email || !body.password) {
-      showMsg('Please fill in all fields.', false); return;
-    }
+    clearErrors();
+    const fullName = document.getElementById('fullName').value.trim();
+    const username = document.getElementById('username').value.trim();
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const roleVal  = document.getElementById('role').value;
+    let valid = true;
+
+    if (!fullName) { document.getElementById('fullName').classList.add('err'); document.getElementById('errFullName').classList.add('show'); valid=false; }
+    if (!username) { document.getElementById('username').classList.add('err'); document.getElementById('errUsername').classList.add('show'); valid=false; }
+    if (!email || !EMAIL_RE.test(email)) { document.getElementById('email').classList.add('err'); document.getElementById('errEmail').classList.add('show'); valid=false; }
+    if (!password) { document.getElementById('password').classList.add('err'); document.getElementById('errPassword').classList.add('show'); valid=false; }
+    if (!valid) return;
+
     const res = await fetch('/api/users/register', {
-      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+      body: JSON.stringify({ fullName, username, email, password, role: roleVal })
     });
     const data = await res.json();
     if (res.ok) {
       showMsg('User added successfully!', true);
-      document.getElementById('fullName').value = '';
-      document.getElementById('username').value = '';
-      document.getElementById('email').value = '';
-      document.getElementById('password').value = '';
+      document.getElementById('fullName').value='';
+      document.getElementById('username').value='';
+      document.getElementById('email').value='';
+      document.getElementById('password').value='';
       loadUsers();
     } else {
       showMsg(data.error || 'Error adding user.', false);
     }
   }
+
   async function deleteUser(id) {
     if (!confirm('Delete this user?')) return;
-    await fetch('/api/users/' + id, { method: 'DELETE' });
+    await fetch('/api/users/'+id, { method:'DELETE', headers:{'X-Auth-Token':token} });
     loadUsers();
   }
+
   async function toggleUser(id) {
-    await fetch('/api/users/' + id + '/toggle', { method: 'PUT' });
+    await fetch('/api/users/'+id+'/toggle', { method:'PUT', headers:{'X-Auth-Token':token} });
     loadUsers();
   }
-  loadUsers();
+
+  async function doLogout() {
+    await fetch('/api/users/logout', { method:'POST', headers:{'X-Auth-Token':token} });
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('authUser');
+    window.location.href = '/login.html';
+  }
 </script>
 </body>
 </html>
