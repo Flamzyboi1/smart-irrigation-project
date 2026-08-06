@@ -50,9 +50,8 @@
   </style>
 </head>
 <body>
-
 <nav>
-  <div class="brand">Smart Irrigation Dashboard<span>ECOIGM SIA — Prototype Dashboard</span></div>
+  <div class="brand">Smart Irrigation Dashboard <span>ECOIGM SIA — Prototype Dashboard</span></div>
   <div class="links">
     <a href="/index.html">Dashboard</a>
     <a href="/sensors.html">Sensors</a>
@@ -68,38 +67,37 @@
 </nav>
 
 <div class="container">
-
-  <!-- Access Denied panel (shown to FARMERs) -->
+  <!-- Access denied panel (shown for non-admin users) -->
   <div id="accessDenied" class="access-denied" style="display:none">
     <h2>&#128274; Access Denied</h2>
     <p>You do not have permission to view user management.<br>Please contact your administrator.</p>
   </div>
 
-  <!-- Admin panel (shown to ADMIN / SUPERADMIN) -->
+  <!-- Admin panel -->
   <div id="adminPanel" style="display:none">
     <h2>User Management</h2>
 
     <div class="card">
-      <h3 id="formTitle">Add New User</h3>
+      <h3>Add New User</h3>
       <div id="msg" class="msg"></div>
       <div class="form-grid">
         <div>
-          <input type="text" id="fullName" placeholder="Full Name"/>
-          <span class="field-err" id="errFullName">Full name is required.</span>
+          <input type="text" id="fullName" placeholder="Full Name">
+          <div class="field-err" id="errFullName">Full name is required.</div>
         </div>
         <div>
-          <input type="text" id="username" placeholder="Username"/>
-          <span class="field-err" id="errUsername">Username is required.</span>
+          <input type="text" id="username" placeholder="Username">
+          <div class="field-err" id="errUsername">Username is required.</div>
         </div>
         <div>
-          <input type="email" id="email" placeholder="Email Address"/>
-          <span class="field-err" id="errEmail">Enter a valid email (e.g. user@domain.com).</span>
+          <input type="email" id="email" placeholder="Email Address">
+          <div class="field-err" id="errEmail">Enter a valid email (e.g. user@domain.com).</div>
         </div>
         <div>
-          <input type="password" id="password" placeholder="Password"/>
-          <span class="field-err" id="errPassword">Password is required.</span>
+          <input type="password" id="password" placeholder="Password">
+          <div class="field-err" id="errPassword">Password is required.</div>
         </div>
-        <div id="roleWrap">
+        <div>
           <select id="role">
             <option value="FARMER">Farmer</option>
             <option value="ADMIN" id="adminOption">Admin</option>
@@ -112,137 +110,143 @@
     <div class="card">
       <h3>All Users</h3>
       <table>
-        <thead><tr><th>#</th><th>Full Name</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody id="userTable"><tr><td colspan="7" style="text-align:center;color:#aaa">Loading...</td></tr></tbody>
+        <thead>
+          <tr><th>#</th><th>Full Name</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="userTable">
+          <tr><td colspan="7">Loading...</td></tr>
+        </tbody>
       </table>
     </div>
   </div>
-
 </div>
 
 <script>
-  const EMAIL_RE = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-  const token = localStorage.getItem('authToken');
-  const userStr = localStorage.getItem('authUser');
+const EMAIL_RE = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+const token = localStorage.getItem('authToken');
+const userStr = localStorage.getItem('authUser');
 
-  // Redirect to login if not authenticated
-  if (!token || !userStr) {
-    window.location.href = '/login.html';
+// Redirect to login if not authenticated
+if (!token || !userStr) { window.location.href = '/login.html'; }
+
+const user = JSON.parse(userStr || '{}');
+const role = user.role || '';
+
+// Show name in navbar
+document.getElementById('navUserInfo').textContent = (user.fullName || user.username || '') + ' (' + role + ')';
+
+// Hide Admin option in role dropdown for non-SUPERADMIN
+if (role !== 'SUPERADMIN') {
+  const adminOpt = document.getElementById('adminOption');
+  if (adminOpt) adminOpt.remove();
+}
+
+// Show correct panel based on role
+if (role === 'ADMIN' || role === 'SUPERADMIN') {
+  document.getElementById('adminPanel').style.display = 'block';
+  loadUsers();
+} else {
+  document.getElementById('accessDenied').style.display = 'block';
+}
+
+function showMsg(text, ok) {
+  const el = document.getElementById('msg');
+  el.className = 'msg ' + (ok ? 'msg-ok' : 'msg-err');
+  el.textContent = text;
+  setTimeout(() => { el.style.display='none'; el.textContent=''; }, 3500);
+}
+
+async function loadUsers() {
+  const res = await fetch('/api/users', { headers: { 'X-Auth-Token': token } });
+  if (res.status === 401) { window.location.href = '/login.html'; return; }
+  if (res.status === 403) {
+    document.getElementById('adminPanel').style.display='none';
+    document.getElementById('accessDenied').style.display='block';
+    return;
   }
-
-  const user = JSON.parse(userStr || '{}');
-  const role = user.role || '';
-
-  // Show name in navbar
-  document.getElementById('navUserInfo').textContent =
-    (user.fullName || user.username || '') + ' (' + role + ')';
-
-  // Hide Admin option in role dropdown for non-SUPERADMIN
-  if (role !== 'SUPERADMIN') {
-    const adminOpt = document.getElementById('adminOption');
-    if (adminOpt) adminOpt.remove();
+  const users = await res.json();
+  const tbody = document.getElementById('userTable');
+  if (!users.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa">No users found</td></tr>';
+    return;
   }
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td>${u.id}</td>
+      <td>${u.fullName}</td>
+      <td>${u.username}</td>
+      <td>${u.email}</td>
+      <td><span class="badge ${badgeRole(u.role)}">${u.role}</span></td>
+      <td><span class="badge ${u.active ? 'badge-active':'badge-inactive'}">${u.active?'Active':'Inactive'}</span></td>
+      <td class="actions">
+        <button class="btn-toggle" onclick="toggleUser(${u.id})">${u.active?'Disable':'Enable'}</button>
+        ${role === 'SUPERADMIN' ? `<button class="btn-red" onclick="deleteUser(${u.id})">Delete</button>` : ''}
+      </td>
+    </tr>
+  `).join('');
+}
 
-  // Show correct panel based on role
-  if (role === 'ADMIN' || role === 'SUPERADMIN') {
-    document.getElementById('adminPanel').style.display = 'block';
+function badgeRole(r) {
+  if (r==='ADMIN') return 'badge-admin';
+  if (r==='SUPERADMIN') return 'badge-superadmin';
+  return 'badge-farmer';
+}
+
+function clearErrors() {
+  ['fullName','username','email','password'].forEach(f => {
+    document.getElementById(f).classList.remove('err');
+    document.getElementById('err'+f.charAt(0).toUpperCase()+f.slice(1)).classList.remove('show');
+  });
+}
+
+async function addUser() {
+  clearErrors();
+  const fullName = document.getElementById('fullName').value.trim();
+  const username = document.getElementById('username').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const roleVal = document.getElementById('role').value;
+  let valid = true;
+  if (!fullName) { document.getElementById('fullName').classList.add('err'); document.getElementById('errFullName').classList.add('show'); valid=false; }
+  if (!username) { document.getElementById('username').classList.add('err'); document.getElementById('errUsername').classList.add('show'); valid=false; }
+  if (!email || !EMAIL_RE.test(email)) { document.getElementById('email').classList.add('err'); document.getElementById('errEmail').classList.add('show'); valid=false; }
+  if (!password) { document.getElementById('password').classList.add('err'); document.getElementById('errPassword').classList.add('show'); valid=false; }
+  if (!valid) return;
+  const res = await fetch('/api/users/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
+    body: JSON.stringify({ fullName, username, email, password, role: roleVal })
+  });
+  const data = await res.json();
+  if (res.ok) {
+    showMsg('User added successfully!', true);
+    document.getElementById('fullName').value='';
+    document.getElementById('username').value='';
+    document.getElementById('email').value='';
+    document.getElementById('password').value='';
     loadUsers();
   } else {
-    document.getElementById('accessDenied').style.display = 'block';
+    showMsg(data.error || 'Error adding user.', false);
   }
+}
 
-  function showMsg(text, ok) {
-    const el = document.getElementById('msg');
-    el.className = 'msg ' + (ok ? 'msg-ok' : 'msg-err');
-    el.textContent = text;
-    setTimeout(() => { el.style.display='none'; el.textContent=''; }, 3500);
-  }
+async function deleteUser(id) {
+  if (!confirm('Delete this user?')) return;
+  await fetch('/api/users/'+id, { method:'DELETE', headers:{'X-Auth-Token':token} });
+  loadUsers();
+}
 
-  async function loadUsers() {
-    const res = await fetch('/api/users', { headers: { 'X-Auth-Token': token } });
-    if (res.status === 401) { window.location.href = '/login.html'; return; }
-    if (res.status === 403) { document.getElementById('adminPanel').style.display='none'; document.getElementById('accessDenied').style.display='block'; return; }
-    const users = await res.json();
-    const tbody = document.getElementById('userTable');
-    if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa">No users found</td></tr>'; return; }
-    tbody.innerHTML = users.map(u => `
-      <tr>
-        <td>${u.id}</td>
-        <td>${u.fullName}</td>
-        <td>${u.username}</td>
-        <td>${u.email}</td>
-        <td><span class="badge ${badgeRole(u.role)}">${u.role}</span></td>
-        <td><span class="badge ${u.active ? 'badge-active':'badge-inactive'}">${u.active?'Active':'Inactive'}</span></td>
-        <td class="actions">
-          <button class="btn-toggle" onclick="toggleUser(${u.id})">${u.active?'Disable':'Enable'}</button>
-          <button class="btn-red" onclick="deleteUser(${u.id})">Delete</button>
-        </td>
-      </tr>`).join('');
-  }
+async function toggleUser(id) {
+  await fetch('/api/users/'+id+'/toggle', { method:'PUT', headers:{'X-Auth-Token':token} });
+  loadUsers();
+}
 
-  function badgeRole(r) {
-    if (r==='ADMIN') return 'badge-admin';
-    if (r==='SUPERADMIN') return 'badge-superadmin';
-    return 'badge-farmer';
-  }
-
-  function clearErrors() {
-    ['fullName','username','email','password'].forEach(f => {
-      document.getElementById(f).classList.remove('err');
-      document.getElementById('err'+f.charAt(0).toUpperCase()+f.slice(1)).classList.remove('show');
-    });
-  }
-
-  async function addUser() {
-    clearErrors();
-    const fullName = document.getElementById('fullName').value.trim();
-    const username = document.getElementById('username').value.trim();
-    const email    = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const roleVal  = document.getElementById('role').value;
-    let valid = true;
-
-    if (!fullName) { document.getElementById('fullName').classList.add('err'); document.getElementById('errFullName').classList.add('show'); valid=false; }
-    if (!username) { document.getElementById('username').classList.add('err'); document.getElementById('errUsername').classList.add('show'); valid=false; }
-    if (!email || !EMAIL_RE.test(email)) { document.getElementById('email').classList.add('err'); document.getElementById('errEmail').classList.add('show'); valid=false; }
-    if (!password) { document.getElementById('password').classList.add('err'); document.getElementById('errPassword').classList.add('show'); valid=false; }
-    if (!valid) return;
-
-    const res = await fetch('/api/users/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': token },
-      body: JSON.stringify({ fullName, username, email, password, role: roleVal })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      showMsg('User added successfully!', true);
-      document.getElementById('fullName').value='';
-      document.getElementById('username').value='';
-      document.getElementById('email').value='';
-      document.getElementById('password').value='';
-      loadUsers();
-    } else {
-      showMsg(data.error || 'Error adding user.', false);
-    }
-  }
-
-  async function deleteUser(id) {
-    if (!confirm('Delete this user?')) return;
-    await fetch('/api/users/'+id, { method:'DELETE', headers:{'X-Auth-Token':token} });
-    loadUsers();
-  }
-
-  async function toggleUser(id) {
-    await fetch('/api/users/'+id+'/toggle', { method:'PUT', headers:{'X-Auth-Token':token} });
-    loadUsers();
-  }
-
-  async function doLogout() {
-    await fetch('/api/users/logout', { method:'POST', headers:{'X-Auth-Token':token} });
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authUser');
-    window.location.href = '/login.html';
-  }
+async function doLogout() {
+  await fetch('/api/users/logout', { method:'POST', headers:{'X-Auth-Token':token} });
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('authUser');
+  window.location.href = '/login.html';
+}
 </script>
 </body>
 </html>
