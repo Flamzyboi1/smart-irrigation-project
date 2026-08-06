@@ -1,259 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sensor Readings</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; background: #f4f4f4; color: #20352a; }
-
-    .head {
-      padding: 14px 4%;
-      background: #176b45;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .head h1 { font-size: 18px; }
-    nav a {
-      color: white;
-      margin-left: 12px;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 13px;
-    }
-    nav a:hover { text-decoration: underline; }
-
-    .container { padding: 20px 4%; }
-
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    .stat {
-      background: white;
-      border-radius: 10px;
-      padding: 14px;
-      text-align: center;
-      box-shadow: 0 1px 6px rgba(0,0,0,.08);
-      border-top: 4px solid #176b45;
-    }
-
-    .stat h3 { font-size: 22px; color: #176b45; }
-    .stat p { font-size: 12px; color: #666; margin-top: 4px; }
-
-    .toolbar {
-      margin-bottom: 14px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .toolbar button {
-      padding: 8px 14px;
-      border: none;
-      border-radius: 6px;
-      background: #176b45;
-      color: white;
-      cursor: pointer;
-      font-size: 13px;
-    }
-
-    .toolbar button:hover { background: #0f4d30; }
-
-    .table-wrap {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.08);
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 1100px;
-    }
-
-    th, td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #eee;
-      font-size: 13px;
-      text-align: left;
-    }
-
-    thead th {
-      background: #176b45;
-      color: white;
-      position: sticky;
-      top: 0;
-    }
-
-    tr:hover { background: #f8fcf8; }
-
-    .badge {
-      display: inline-block;
-      padding: 3px 9px;
-      border-radius: 10px;
-      font-size: 11px;
-      font-weight: bold;
-    }
-
-    .IRRIGATE_NOW { background: #f8d7da; color: #721c24; }
-    .IRRIGATE { background: #fff3cd; color: #856404; }
-    .ADEQUATE { background: #d4edda; color: #155724; }
-    .EXCESS_WATER { background: #cce5ff; color: #004085; }
-
-    .empty, .error {
-      padding: 24px;
-      text-align: center;
-      color: #777;
-    }
-
-    .error { color: red; }
-
-    @media (max-width: 900px) {
-      .summary { grid-template-columns: repeat(2, 1fr); }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor Readings</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f4f4f4; color: #20352a; }
+        .head {
+            padding: 14px 4%;
+            background: #176b45;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .head h1 { font-size: 18px; }
+        nav a {
+            color: white;
+            margin-left: 12px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        nav a:hover { text-decoration: underline; }
+        .container { padding: 20px 4%; }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .stat {
+            background: white;
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+            box-shadow: 0 1px 6px rgba(0,0,0,.08);
+            border-top: 4px solid #176b45;
+        }
+        .stat h3 { font-size: 22px; color: #176b45; }
+        .stat p { font-size: 12px; color: #666; margin-top: 4px; }
+        .toolbar {
+            margin-bottom: 14px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .toolbar button {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            background: #176b45;
+            color: white;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .toolbar button:hover { background: #0f4d30; }
+        .table-wrap {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.08);
+            overflow-x: auto;
+            width: 100%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+        th, td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 12px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        thead th {
+            background: #176b45;
+            color: white;
+            position: sticky;
+            top: 0;
+            font-size: 12px;
+        }
+        tr:hover { background: #f8fcf8; }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .IRRIGATE_NOW { background: #f8d7da; color: #721c24; }
+        .IRRIGATE { background: #fff3cd; color: #856404; }
+        .ADEQUATE { background: #d4edda; color: #155724; }
+        .EXCESS_WATER { background: #cce5ff; color: #004085; }
+        .empty, .error {
+            padding: 24px;
+            text-align: center;
+            color: #777;
+        }
+        .error { color: red; }
+        @media (max-width: 900px) {
+            .summary { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+            .summary { grid-template-columns: repeat(2, 1fr); }
+            th, td { padding: 6px 8px; font-size: 11px; }
+        }
+    </style>
 </head>
 <body>
-
-  <div class="head">
-    <h1>Sensor Readings</h1>
-    <nav>
-      <a href="index.html">Dashboard</a>
-      <a href="sensors.html">Sensors</a>
-      <a href="zones.html">Zones</a>
-      <a href="alerts.html">Alerts</a>
-      <a href="readings.html">Readings</a>
-    </nav>
-  </div>
-
-  <div class="container">
-    <div class="summary">
-      <div class="stat">
-        <h3 id="totalCount">-</h3>
-        <p>Total Readings</p>
-      </div>
-      <div class="stat">
-        <h3 id="avgSoil">-</h3>
-        <p>Average Soil %</p>
-      </div>
-      <div class="stat">
-        <h3 id="avgVwc">-</h3>
-        <p>Average VWC</p>
-      </div>
-      <div class="stat">
-        <h3 id="avgTemp">-</h3>
-        <p>Average Temperature</p>
-      </div>
+    <div class="head">
+        <h1>Sensor Readings</h1>
+        <nav>
+            <a href="index.html">Dashboard</a>
+            <a href="sensors.html">Sensors</a>
+            <a href="zones.html">Zones</a>
+            <a href="alerts.html">Alerts</a>
+            <a href="readings.html">Readings</a>
+            <a href="users.html">Users</a>
+        </nav>
     </div>
-
-    <div class="toolbar">
-      <button onclick="loadReadings()">Refresh</button>
-      <button onclick="window.open('/api/readings','_blank')">Open API</button>
+    <div class="container">
+        <div class="summary">
+            <div class="stat">
+                <h3 id="totalCount">-</h3>
+                <p>Total Readings</p>
+            </div>
+            <div class="stat">
+                <h3 id="avgSoil">-</h3>
+                <p>Average Soil %</p>
+            </div>
+            <div class="stat">
+                <h3 id="avgVwc">-</h3>
+                <p>Average VWC</p>
+            </div>
+            <div class="stat">
+                <h3 id="avgTemp">-</h3>
+                <p>Average Temperature</p>
+            </div>
+        </div>
+        <div class="toolbar">
+            <button onclick="loadReadings()">Refresh</button>
+            <button onclick="window.open('/api/readings','_blank')">Open API</button>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Sensor ID</th>
+                        <th>Zone</th>
+                        <th>Soil %</th>
+                        <th>VWC %</th>
+                        <th>Temp</th>
+                        <th>Humidity</th>
+                        <th>Rainfall</th>
+                        <th>Flow Rate</th>
+                        <th>Battery</th>
+                        <th>Recommendation</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody id="readingsBody">
+                    <tr><td colspan="12" class="empty">Loading readings...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Sensor ID</th>
-            <th>Zone</th>
-            <th>Soil %</th>
-            <th>VWC %</th>
-            <th>Temp</th>
-            <th>Humidity</th>
-            <th>Rainfall</th>
-            <th>Flow Rate</th>
-            <th>Battery</th>
-            <th>Recommendation</th>
-            <th>Timestamp</th>
-          </tr>
-        </thead>
-        <tbody id="readingsBody">
-          <tr><td colspan="12" class="empty">Loading readings...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <script>
-    function safe(v, fallback = '-') {
-      return v === null || v === undefined || v === '' ? fallback : v;
-    }
-
-    function num(v, digits = 1, suffix = '') {
-      return v === null || v === undefined || isNaN(v) ? '-' : Number(v).toFixed(digits) + suffix;
-    }
-
-    function badgeClass(rec) {
-      return (rec || 'ADEQUATE').replace(/\s+/g, '_');
-    }
-
-    async function loadReadings() {
-      try {
-        const res = await fetch('/api/readings');
-        const data = await res.json();
-
-        const body = document.getElementById('readingsBody');
-
-        if (!Array.isArray(data) || data.length === 0) {
-          body.innerHTML = `<tr><td colspan="12" class="empty">No readings found.</td></tr>`;
-          document.getElementById('totalCount').textContent = '0';
-          document.getElementById('avgSoil').textContent = '-';
-          document.getElementById('avgVwc').textContent = '-';
-          document.getElementById('avgTemp').textContent = '-';
-          return;
+    <script>
+        function safe(v, fallback = '-') {
+            return v === null || v === undefined || v === '' ? fallback : v;
         }
-
-        const sorted = [...data].sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
-
-        body.innerHTML = sorted.map((r, i) => `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${safe(r.sensorId)}</td>
-            <td>${safe(r.zoneName)}</td>
-            <td>${num(r.soilPercent, 1, '%')}</td>
-            <td>${num(r.volumetricWaterContent, 1, '%')}</td>
-            <td>${num(r.temperature, 1, '°C')}</td>
-            <td>${num(r.humidity, 1, '%')}</td>
-            <td>${num(r.rainfall, 1, ' mm')}</td>
-            <td>${num(r.flowRate, 2, ' L/min')}</td>
-            <td>${num(r.batteryVoltage, 2, ' V')}</td>
-            <td><span class="badge ${badgeClass(r.recommendation)}">${safe(r.recommendation)}</span></td>
-            <td>${safe(r.timestamp)}</td>
-          </tr>
-        `).join('');
-
-        const avg = (arr) => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length) : null;
-
-        const soilVals = data.map(x => x.soilPercent).filter(x => x !== null && x !== undefined && !isNaN(x));
-        const vwcVals = data.map(x => x.volumetricWaterContent).filter(x => x !== null && x !== undefined && !isNaN(x));
-        const tempVals = data.map(x => x.temperature).filter(x => x !== null && x !== undefined && !isNaN(x));
-
-        document.getElementById('totalCount').textContent = data.length;
-        document.getElementById('avgSoil').textContent = avg(soilVals) === null ? '-' : avg(soilVals).toFixed(1) + '%';
-        document.getElementById('avgVwc').textContent = avg(vwcVals) === null ? '-' : avg(vwcVals).toFixed(1) + '%';
-        document.getElementById('avgTemp').textContent = avg(tempVals) === null ? '-' : avg(tempVals).toFixed(1) + '°C';
-
-      } catch (e) {
-        document.getElementById('readingsBody').innerHTML =
-          `<tr><td colspan="12" class="error">Failed to load readings: ${e.message}</td></tr>`;
-      }
-    }
-
-    loadReadings();
-    setInterval(loadReadings, 30000);
-  </script>
+        function num(v, digits = 1, suffix = '') {
+            return v === null || v === undefined || isNaN(v) ? '-' : Number(v).toFixed(digits) + suffix;
+        }
+        function badgeClass(rec) {
+            return (rec || 'ADEQUATE').replace(/\s+/g, '_');
+        }
+        async function loadReadings() {
+            try {
+                const res = await fetch('/api/readings');
+                const data = await res.json();
+                const body = document.getElementById('readingsBody');
+                if (!Array.isArray(data) || data.length === 0) {
+                    body.innerHTML = `<tr><td colspan="12" class="empty">No readings found.</td></tr>`;
+                    document.getElementById('totalCount').textContent = '0';
+                    document.getElementById('avgSoil').textContent = '-';
+                    document.getElementById('avgVwc').textContent = '-';
+                    document.getElementById('avgTemp').textContent = '-';
+                    return;
+                }
+                const sorted = [...data].sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+                body.innerHTML = sorted.map((r, i) => `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${safe(r.sensorId)}</td>
+                        <td>${safe(r.zoneName)}</td>
+                        <td>${num(r.soilPercent, 1, '%')}</td>
+                        <td>${num(r.volumetricWaterContent, 1, '%')}</td>
+                        <td>${num(r.temperature, 1, '\u00b0C')}</td>
+                        <td>${num(r.humidity, 1, '%')}</td>
+                        <td>${num(r.rainfall, 1, ' mm')}</td>
+                        <td>${num(r.flowRate, 2, ' L/min')}</td>
+                        <td>${num(r.batteryVoltage, 2, ' V')}</td>
+                        <td><span class="badge ${badgeClass(r.recommendation)}">${safe(r.recommendation)}</span></td>
+                        <td>${safe(r.timestamp)}</td>
+                    </tr>
+                `).join('');
+                const avg = (arr) => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length) : null;
+                const soilVals = data.map(x => x.soilPercent).filter(x => x !== null && x !== undefined && !isNaN(x));
+                const vwcVals = data.map(x => x.volumetricWaterContent).filter(x => x !== null && x !== undefined && !isNaN(x));
+                const tempVals = data.map(x => x.temperature).filter(x => x !== null && x !== undefined && !isNaN(x));
+                document.getElementById('totalCount').textContent = data.length;
+                document.getElementById('avgSoil').textContent = avg(soilVals) === null ? '-' : avg(soilVals).toFixed(1) + '%';
+                document.getElementById('avgVwc').textContent = avg(vwcVals) === null ? '-' : avg(vwcVals).toFixed(1) + '%';
+                document.getElementById('avgTemp').textContent = avg(tempVals) === null ? '-' : avg(tempVals).toFixed(1) + '\u00b0C';
+            } catch (e) {
+                document.getElementById('readingsBody').innerHTML =
+                    `<tr><td colspan="12" class="error">Failed to load readings: ${e.message}</td></tr>`;
+            }
+        }
+        loadReadings();
+        setInterval(loadReadings, 30000);
+    </script>
 </body>
 </html>
