@@ -90,7 +90,6 @@ public class UserController {
         if (!caller.getRole().equals("ADMIN") && !caller.getRole().equals("SUPERADMIN")) {
             return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
         }
-        // Validate email with regex
         if (user.getEmail() == null || !EMAIL_PATTERN.matcher(user.getEmail()).matches()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Invalid email format"));
         }
@@ -100,7 +99,6 @@ public class UserController {
         if (userRepo.existsByEmail(user.getEmail())) {
             return ResponseEntity.badRequest().body(Map.of("error", "Email already registered"));
         }
-        // Only SUPERADMIN can create ADMIN accounts
         if ("ADMIN".equals(user.getRole()) && !caller.getRole().equals("SUPERADMIN")) {
             return ResponseEntity.status(403).body(Map.of("error", "Only SUPERADMIN can create ADMIN accounts"));
         }
@@ -110,7 +108,38 @@ public class UserController {
         return ResponseEntity.ok(saved);
     }
 
-    // ---- DELETE USER (ADMIN/SUPERADMIN only) ----
+    // ---- UPDATE USER (SUPERADMIN only) ----
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateUser(
+            @RequestHeader(value="X-Auth-Token", required=false) String token,
+            @PathVariable Long id,
+            @RequestBody Map<String, String> updates) {
+        AppUser caller = sessions.get(token);
+        if (caller == null) return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        if (!caller.getRole().equals("SUPERADMIN")) {
+            return ResponseEntity.status(403).body(Map.of("error", "Only SUPERADMIN can edit users"));
+        }
+        Optional<AppUser> opt = userRepo.findById(id);
+        if (opt.isEmpty()) return ResponseEntity.notFound().build();
+        AppUser u = opt.get();
+        if (updates.containsKey("fullName") && !updates.get("fullName").isBlank())
+            u.setFullName(updates.get("fullName"));
+        if (updates.containsKey("email") && !updates.get("email").isBlank()) {
+            if (!EMAIL_PATTERN.matcher(updates.get("email")).matches())
+                return ResponseEntity.badRequest().body(Map.of("error", "Invalid email format"));
+            u.setEmail(updates.get("email"));
+        }
+        if (updates.containsKey("role") && !updates.get("role").isBlank())
+            u.setRole(updates.get("role"));
+        if (updates.containsKey("password") && !updates.get("password").isBlank())
+            u.setPassword(updates.get("password"));
+        AppUser saved = userRepo.save(u);
+        // Refresh session if editing self
+        sessions.replaceAll((t, su) -> su.getId().equals(id) ? saved : su);
+        return ResponseEntity.ok(saved);
+    }
+
+    // ---- DELETE USER (SUPERADMIN only) ----
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUser(
             @RequestHeader(value="X-Auth-Token", required=false) String token,
@@ -122,6 +151,7 @@ public class UserController {
         }
         if (!userRepo.existsById(id)) return ResponseEntity.notFound().build();
         userRepo.deleteById(id);
+        sessions.entrySet().removeIf(e -> e.getValue().getId().equals(id));
         return ResponseEntity.ok(Map.of("message", "User deleted"));
     }
 
