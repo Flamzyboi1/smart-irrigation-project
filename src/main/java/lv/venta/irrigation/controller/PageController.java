@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class PageController {
-    @GetMapping("/dashboard") public String dashboard(){return "forward:/dashboard.html";}
-    @GetMapping("/field-blocks") public String fields(){return "forward:/field-blocks.html";}
+    @GetMapping("/") public String root(){return "redirect:/login.html";}
+    @GetMapping("/dashboard") public String dashboard(){return "redirect:/dashboard.html";}
+    @GetMapping("/field-blocks") public String fields(){return "redirect:/field-blocks.html";}
 }
