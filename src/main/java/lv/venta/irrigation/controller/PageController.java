@@ -5,6 +5,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class PageController {
-    @GetMapping({"/", "/index.html"}) public String home(){return "redirect:/login.html";}
-    @GetMapping("/field-blocks") public String fieldBlocks(){return "redirect:/field-blocks.html";}
+    @GetMapping({"/", "/index.html"})
+    public String home() { return "redirect:/login.html"; }
+
+    @GetMapping({"/dashboard", "/dashboard.html"})
+    public String dashboard() { return "redirect:/dashboard.html"; }
+
+    @GetMapping("/field-blocks")
+    public String fieldBlocks() { return "redirect:/field-blocks.html"; }
 }
