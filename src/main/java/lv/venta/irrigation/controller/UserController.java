@@ -4,8 +4,8 @@ import lv.venta.irrigation.model.AppUser;
 import lv.venta.irrigation.repo.AppUserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -16,12 +16,14 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<UserDto>> all(){
-        return ResponseEntity.ok(repo.findAll().stream().map(UserDto::new).collect(Collectors.toList()));
+        List<UserDto> result=new ArrayList<>();
+        for(AppUser user:repo.findAll()) if(user!=null) result.add(new UserDto(user));
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping
     public ResponseEntity<UserDto> create(@RequestBody CreateRequest request){
-        if(request==null || request.username==null || request.username.isBlank()) return ResponseEntity.badRequest().build();
+        if(request==null||request.username==null||request.username.isBlank()) return ResponseEntity.badRequest().build();
         if(repo.findByUsername(request.username)!=null) return ResponseEntity.status(409).build();
         AppUser user=new AppUser();
         user.setFullName(request.fullName); user.setUsername(request.username); user.setEmail(request.email); user.setPassword(request.password); user.setRole(request.role==null?"FARMER":request.role); user.setActive(true);
@@ -36,10 +38,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id){if(!repo.existsById(id))return ResponseEntity.notFound().build();repo.deleteById(id);return ResponseEntity.noContent().build();}
 
-    public static class CreateRequest { public String fullName,username,email,password,role; }
-    public static class ToggleRequest { public Boolean active; }
-    public static class UserDto {
-        public Long id; public String fullName,username,email,role; public boolean active;
-        public UserDto(AppUser u){id=u.getId();fullName=u.getFullName();username=u.getUsername();email=u.getEmail();role=u.getRole();active=u.isActive();}
-    }
+    public static class CreateRequest{public String fullName,username,email,password,role;}
+    public static class ToggleRequest{public Boolean active;}
+    public static class UserDto{public Long id;public String fullName,username,email,role;public boolean active;public UserDto(AppUser u){id=u.getId();fullName=u.getFullName();username=u.getUsername();email=u.getEmail();role=u.getRole();active=u.isActive();}}
 }
