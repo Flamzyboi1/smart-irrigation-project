@@ -1,9 +1,10 @@
 package lv.venta.irrigation.controller;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class WebController {
-    // Static HTML pages are served directly from src/main/resources/static.
-    // PageController owns only the extensionless convenience routes.
+    @GetMapping({"/login","/login/"})
+    public String loginPage(){return "forward:/login.html";}
 }

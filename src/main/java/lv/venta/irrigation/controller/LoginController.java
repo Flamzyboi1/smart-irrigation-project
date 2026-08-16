@@ -11,13 +11,12 @@ import org.springframework.web.bind.annotation.*;
 public class LoginController {
     private final AppUserRepository repo;
     public LoginController(AppUserRepository repo){this.repo=repo;}
-
     @PostMapping({"/login","/auth/login"})
-    public ResponseEntity<?> login(@RequestBody LoginRequest request){
-        if(request==null||request.username==null||request.password==null) return ResponseEntity.badRequest().body(new ErrorResponse("Username and password are required"));
-        AppUser user=repo.findByUsername(request.username);
-        if(user==null||!user.isActive()||!request.password.equals(user.getPassword())) return ResponseEntity.status(401).body(new ErrorResponse("Invalid username or password"));
-        return ResponseEntity.ok(new LoginResponse(user));
+    public ResponseEntity<?> login(@RequestBody LoginRequest r){
+        if(r==null||r.username==null||r.password==null)return ResponseEntity.badRequest().body(new ErrorResponse("Username and password are required"));
+        AppUser u=repo.findByUsername(r.username.trim());
+        if(u==null||!u.isActive()||!r.password.equals(u.getPassword()))return ResponseEntity.status(401).body(new ErrorResponse("Invalid username or password"));
+        return ResponseEntity.ok(new LoginResponse(u));
     }
     public static class LoginRequest{public String username,password;}
     public static class ErrorResponse{public String message;public ErrorResponse(String m){message=m;}}
