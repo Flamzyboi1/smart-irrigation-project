@@ -15,8 +15,9 @@ public class LoginController {
     public ResponseEntity<?> login(@RequestBody LoginRequest r){
         if(r==null||r.username==null||r.password==null)return ResponseEntity.badRequest().body(new ErrorResponse("Username and password are required"));
         String username=r.username.trim();
-        if("EcoigmAdmin".equals(username)&&"Ecoigm123#".equals(r.password)) return ResponseEntity.ok(new LoginResponse(username,"ECOIGM Administrator","admin@ecoigm.local","SUPERADMIN",true));
-        try{AppUser u=repo.findByUsername(username);if(u!=null&&u.isActive()&&r.password.equals(u.getPassword()))return ResponseEntity.ok(new LoginResponse(u.getUsername(),u.getFullName(),u.getEmail(),u.getRole(),u.isActive()));}catch(Exception ignored){}
+        if("EcoigmAdmin".equals(username)&&"Ecoigm123#".equals(r.password))return ResponseEntity.ok(new LoginResponse(username,"ECOIGM Administrator","admin@ecoigm.local","SUPERADMIN",true));
+        AppUser u=repo.findByUsername(username).orElse(null);
+        if(u!=null&&u.isActive()&&r.password.equals(u.getPassword()))return ResponseEntity.ok(new LoginResponse(u.getUsername(),u.getFullName(),u.getEmail(),u.getRole(),u.isActive()));
         return ResponseEntity.status(401).body(new ErrorResponse("Invalid username or password"));
     }
     public static class LoginRequest{public String username,password;}

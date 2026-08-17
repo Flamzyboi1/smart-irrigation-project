@@ -11,17 +11,11 @@ public class DefaultAdminInitializer {
     @Bean
     CommandLineRunner createDefaultAdmin(AppUserRepository repo){
         return args -> {
-            AppUser user=repo.findByUsername("EcoigmAdmin");
+            AppUser user=repo.findByUsername("EcoigmAdmin").orElse(null);
             if(user==null){
-                user=new AppUser();
-                user.setUsername("EcoigmAdmin");
-                user.setPassword("Ecoigm123#");
-                user.setFullName("ECOIGM Administrator");
-                user.setEmail("admin@ecoigm.local");
-                user.setRole("SUPERADMIN");
+                user=new AppUser(); user.setUsername("EcoigmAdmin"); user.setPassword("Ecoigm123#"); user.setFullName("ECOIGM Administrator"); user.setEmail("admin@ecoigm.local"); user.setRole("SUPERADMIN");
             }
-            user.setActive(true);
-            repo.save(user);
+            user.setActive(true); repo.save(user);
         };
     }
 }

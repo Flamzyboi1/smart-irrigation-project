@@ -14,9 +14,8 @@ public class FieldBlockController {
     public FieldBlockController(FieldBlockRepository repo){this.repo=repo;}
     @GetMapping public List<FieldBlock> all(){return repo.findAll();}
     @PostMapping public ResponseEntity<FieldBlock> create(@RequestBody CreateRequest r){
-        if(r==null||r.name==null||r.name.isBlank()) return ResponseEntity.badRequest().build();
-        FieldBlock f=new FieldBlock(); f.setName(r.name); f.setGeometry(r.geometry); f.setCrop(r.crop); f.setAreaHa(r.areaHa); f.setStatus(r.status==null?"Active":r.status);
-        return ResponseEntity.ok(repo.save(f));
+        if(r==null||r.name==null||r.name.isBlank())return ResponseEntity.badRequest().build();
+        FieldBlock f=new FieldBlock();f.setName(r.name);return ResponseEntity.ok(repo.save(f));
     }
-    public static class CreateRequest{public String name,geometry,crop,status;public Double areaHa;}
+    public static class CreateRequest{public String name;}
 }
